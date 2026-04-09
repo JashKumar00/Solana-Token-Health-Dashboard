@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Jupiter Token Health Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: jupiter
+    description: Jupiter token data operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,106 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /jupiter/search:
+    get:
+      operationId: searchTokens
+      tags: [jupiter]
+      summary: Search tokens
+      description: Search for Solana tokens by name, symbol, or mint address
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token name, symbol, or mint address to search for
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenSearchResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Jupiter API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jupiter/token/{mintAddress}:
+    get:
+      operationId: getTokenMetadata
+      tags: [jupiter]
+      summary: Get token metadata
+      description: Fetch full token metadata from Jupiter Tokens API
+      parameters:
+        - name: mintAddress
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Solana token mint address
+      responses:
+        "200":
+          description: Token metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenMetadata"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Jupiter API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jupiter/price/{mintAddress}:
+    get:
+      operationId: getTokenPrice
+      tags: [jupiter]
+      summary: Get token price
+      description: Fetch live token price from Jupiter Price API v2
+      parameters:
+        - name: mintAddress
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Solana token mint address
+      responses:
+        "200":
+          description: Token price data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPriceResponse"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Jupiter API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +136,135 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: ["string", "null"]
+      required:
+        - error
+
+    TokenSearchResult:
+      type: object
+      properties:
+        address:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        logoURI:
+          type: ["string", "null"]
+        verified:
+          type: boolean
+        decimals:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        organicScore:
+          type: ["number", "null"]
+        daily_volume:
+          type: ["number", "null"]
+      required:
+        - address
+        - name
+        - symbol
+        - verified
+        - decimals
+
+    TokenSearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenSearchResult"
+        rawResponse:
+          type: object
+          description: Raw response from Jupiter API
+      required:
+        - results
+
+    TokenMetadata:
+      type: object
+      properties:
+        address:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        logoURI:
+          type: ["string", "null"]
+        verified:
+          type: boolean
+        decimals:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        organicScore:
+          type: ["number", "null"]
+        organicScoreLabel:
+          type: ["string", "null"]
+        daily_volume:
+          type: ["number", "null"]
+        created_at:
+          type: ["string", "null"]
+        market_cap:
+          type: ["number", "null"]
+        fdv:
+          type: ["number", "null"]
+        holder_count:
+          type: ["number", "null"]
+        liquidity:
+          type: ["number", "null"]
+        rawResponse:
+          type: object
+          description: Raw response from Jupiter API
+      required:
+        - address
+        - name
+        - symbol
+        - verified
+        - decimals
+        - rawResponse
+
+    TokenPriceData:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        price:
+          type: string
+        extraInfo:
+          type: object
+          description: Extra price info if available
+      required:
+        - id
+        - price
+
+    TokenPriceResponse:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        price:
+          type: ["string", "null"]
+        priceData:
+          $ref: "#/components/schemas/TokenPriceData"
+        timeTaken:
+          type: ["number", "null"]
+        rawResponse:
+          type: object
+          description: Raw response from Jupiter API
+      required:
+        - mintAddress
+        - rawResponse

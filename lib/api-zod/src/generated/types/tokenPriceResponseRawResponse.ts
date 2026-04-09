@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+/**
+ * Raw response from Jupiter API
+ */
+export type TokenPriceResponseRawResponse = { [key: string]: unknown };

@@ -1,0 +1,216 @@
+Build a full-stack web application called "Jupiter Token Health Dashboard" using 
+Node.js (Express) for the backend and a single HTML/CSS/JS file for the frontend.
+
+=== CRITICAL RULES ===
+- ZERO fake data. ZERO hardcoded prices. ZERO placeholder values.
+- Every price, score, name, logo, and metric must come from a LIVE Jupiter API call.
+- If an API call fails, show the real error message on screen — never fake a success.
+- No demo mode. No Math.random(). No mock responses.
+- App must work end-to-end with a real Jupiter API key.
+
+=== API CONFIGURATION ===
+Base URL: https://api.jup.ag
+API Key Header: Authorization: jup_7418987a6c0b5083829ab9cac939ed84999b55a3d60912708f35405f7d408c90
+Content-Type: application/json
+
+=== VISUAL DESIGN — CRYPTO DARK THEME ===
+
+This app must look stunning. Think Bloomberg Terminal meets DeFi protocol.
+
+Color Palette:
+- Background: #0a0a0f (near black with blue tint)
+- Card background: #0f0f1a
+- Border: #1a1a2e
+- Primary accent: #9945FF (Solana purple)
+- Secondary accent: #14F195 (Solana green)
+- Danger/red: #FF4444
+- Warning/yellow: #FFB800
+- Text primary: #FFFFFF
+- Text secondary: #8888aa
+- Font: 'Space Grotesk' or 'Inter' from Google Fonts
+
+UI Elements:
+- Glassmorphism cards: background rgba(255,255,255,0.03), 
+  backdrop-filter blur(10px), border 1px solid rgba(255,255,255,0.08)
+- Glowing accents: box-shadow 0 0 20px rgba(153,69,255,0.3) on hover
+- Animated gradient border on the search bar when focused
+- Smooth fade-in animations on all cards when data loads
+- Pulsing green dot next to "LIVE" indicator
+- Number counters that animate from 0 to the real value on load
+- Token logo displayed in a glowing circular frame
+- Verified badge: glowing purple checkmark ✓
+- Unverified badge: yellow warning ⚠
+- All price changes: green arrow ↑ or red arrow ↓ with glow effect
+
+=== WHAT THE APP DOES ===
+
+User types a Solana token name, symbol, or mint address into a search bar.
+App calls Jupiter APIs and renders a complete token health dashboard in real time.
+
+=== FEATURE 1: Token Search (Tokens API) ===
+
+Endpoint: GET https://api.jup.ag/tokens/v1/search?query=SEARCH_TERM
+- As user types (debounced 500ms), call the search endpoint
+- Show a live dropdown of matching tokens with: logo, name, symbol
+- User clicks a result → load the full dashboard for that token
+- Also accept a raw mint address pasted directly into the search bar
+- All results come from Jupiter API — no hardcoded token list
+
+=== FEATURE 2: Token Metadata Card (Tokens API) ===
+
+Endpoint: GET https://api.jup.ag/tokens/v1/token/MINT_ADDRESS
+Fetch and display:
+- Token name (real, from API)
+- Token symbol (real, from API)
+- Token logo image (real URL from API, shown in glowing circle)
+- Mint address (truncated: first 4 chars...last 4 chars, click to copy full)
+- Verification status (verified true/false from API)
+- Decimals
+- Tags (if any returned by API)
+- Daily volume (from API if available)
+- Created date (if available)
+
+Display as a hero card at the top of the dashboard.
+
+=== FEATURE 3: Live Price Card (Price API) ===
+
+Endpoint: GET https://api.jup.ag/price/v2?ids=MINT_ADDRESS
+Fetch and display:
+- Current USD price (real, from API) — large display, animated counter
+- Price shown with full decimal precision from API
+- Confidence level (if returned by API)
+- Last updated timestamp
+- Auto-refresh every 30 seconds
+- Show countdown bar: "Refreshing in 28s..." that depletes visually
+- On each refresh, compare to previous price:
+  - If higher: flash green, show ↑ X% change
+  - If lower: flash red, show ↓ X% change
+  - If same: show — 0.00%
+- If price fetch fails: show "Price Unavailable: [exact API error]"
+
+=== FEATURE 4: Organic Score & Trust Signals ===
+
+From the Tokens API response, extract and display:
+- Organic score (number from API — display as a score out of 100 with 
+  an animated circular progress ring)
+- Score color: 
+  - 70-100: Solana green #14F195 (HEALTHY)
+  - 40-69: yellow #FFB800 (CAUTION)  
+  - 0-39: red #FF4444 (RISKY)
+- Verification status shown as large badge
+- Show a "Token Health Rating" label:
+  - Verified + organic score > 70 = "✓ SAFE TO MONITOR"
+  - Verified + score 40-70 = "⚠ MODERATE RISK"
+  - Unverified OR score < 40 = "✗ HIGH RISK — Trade with caution"
+- All values come from real API response only
+
+=== FEATURE 5: Trading Metrics Panel ===
+
+From the Tokens API response, display whatever trading metrics 
+the API returns, such as:
+- 24h volume (if available in API response)
+- Market cap (if available)
+- Liquidity (if available)
+- Number of holders (if available)
+- Any other trading_metrics fields returned by the API
+
+Display each metric in its own small glowing stat card.
+If a field is not returned by the API, show "N/A — not provided by API" 
+Do NOT make up or estimate any value.
+
+=== FEATURE 6: Raw API Response Viewer ===
+
+At the bottom of the page, add a collapsible section called 
+"Raw API Data (for developers)"
+- Shows the exact JSON response from both API calls
+- Syntax highlighted (use a simple JS highlighter or pre tag with color)
+- This helps you document the real API behavior for your DX report
+
+=== FEATURE 7: Search History ===
+
+- Store the last 5 searched tokens in localStorage
+- Show them as quick-access chips below the search bar
+- Each chip shows token logo + symbol
+- Clicking re-loads that token's dashboard instantly
+
+=== DASHBOARD LAYOUT ===
+
+[TOP BAR]
+- Logo: ◈ Jupiter Token Health  (purple glow on ◈)
+- Tagline: "Real-time token intelligence powered by Jupiter APIs"
+- Top right: pulsing green dot + "LIVE" text
+- Top right: "Powered by Jupiter" badge
+
+[SEARCH BAR — CENTER OF PAGE on load]
+- Large glowing search input
+- Placeholder: "Search token name, symbol, or paste mint address..."
+- Animated gradient border on focus (purple → green → purple)
+- Live dropdown results appear below as user types
+- Recent searches shown as chips below
+
+[AFTER SEARCH — DASHBOARD PANELS]
+
+Row 1 (full width):
+→ Hero Token Card: logo + name + symbol + mint + verified badge + health rating
+
+Row 2 (2 columns):
+→ Left: Live Price Card with countdown refresh bar
+→ Right: Organic Score Card with circular progress ring
+
+Row 3 (3-4 columns depending on API data):
+→ Trading Metric Cards (volume, market cap, liquidity, etc.)
+→ Each in its own glassmorphism card with icon
+
+Row 4 (full width):
+→ Collapsible Raw API Response viewer
+
+[FOOTER]
+- "Data provided by Jupiter Developer Platform — developers.jup.ag"
+- Last full refresh timestamp
+
+=== LOADING STATES ===
+- When search is triggered: show a skeleton loader (pulsing gray blocks)
+  in the shape of each card — NOT a spinner, NOT "loading..."
+- Skeleton cards should match the exact dimensions of real cards
+- Once data arrives: fade in real content replacing skeletons
+- Never show empty cards with no explanation
+
+=== ERROR STATES ===
+- API key invalid: "Jupiter API returned 401 — check your API key"
+- Token not found: "No token found for this address on Jupiter"
+- Rate limited: "Jupiter API rate limit hit — try again in a few seconds"
+- Network error: show exact fetch error message
+- Never show a blank screen — always explain what went wrong
+
+=== BACKEND ROUTES ===
+GET /api/token/:mintAddress     → fetch token metadata from Tokens API
+GET /api/price/:mintAddress     → fetch live price from Price API
+GET /api/search?query=TEXT      → search tokens from Tokens API
+GET /                           → serve the frontend HTML file
+
+All routes: wrap in try/catch, return real error from Jupiter on failure.
+
+=== TECH STACK ===
+- Backend: Node.js + Express
+- Frontend: Single index.html with embedded or linked CSS and JS
+- No React, no build tools, no frameworks — vanilla JS only
+- Google Fonts: Space Grotesk
+- No external UI libraries — build everything custom
+
+=== FILE STRUCTURE ===
+/server.js         → Express backend
+/public/index.html → Full dashboard UI
+/public/style.css  → All styles
+/package.json      → express + node-fetch (or axios)
+
+=== FINAL CHECKLIST ===
+- [ ] All data on screen comes from real Jupiter API responses
+- [ ] Zero hardcoded prices, names, scores, or metrics
+- [ ] Errors from Jupiter API are shown clearly, never hidden
+- [ ] Skeleton loaders appear during every API call
+- [ ] Price auto-refreshes every 30 seconds with countdown bar
+- [ ] Organic score ring animates to real value
+- [ ] Search dropdown works with real token search results
+- [ ] Raw API viewer shows real JSON at the bottom
+- [ ] Dark crypto theme looks sharp on desktop
+- [ ] App runs cleanly with a real Jupiter API key
