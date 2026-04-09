@@ -77,6 +77,46 @@ export const GetTokenMetadataResponse = zod.object({
 });
 
 /**
+ * Fetch historical candlestick data from GeckoTerminal for a token
+ * @summary Get historical OHLCV candle data
+ */
+export const GetOHLCVParams = zod.object({
+  mintAddress: zod.coerce.string().describe("Solana token mint address"),
+});
+
+export const getOHLCVQueryResolutionDefault = `1h`;
+export const getOHLCVQueryBarsDefault = 500;
+
+export const GetOHLCVQueryParams = zod.object({
+  resolution: zod
+    .enum(["5m", "15m", "1h", "4h", "1d"])
+    .default(getOHLCVQueryResolutionDefault)
+    .describe("Candle resolution"),
+  bars: zod.coerce
+    .number()
+    .default(getOHLCVQueryBarsDefault)
+    .describe("Number of candles to fetch"),
+});
+
+export const GetOHLCVResponse = zod.object({
+  mintAddress: zod.string(),
+  pairAddress: zod.string().nullish(),
+  dexId: zod.string().nullish(),
+  resolution: zod.string(),
+  bars: zod.number(),
+  candles: zod.array(
+    zod.object({
+      time: zod.number().describe("Unix timestamp in seconds"),
+      open: zod.number(),
+      high: zod.number(),
+      low: zod.number(),
+      close: zod.number(),
+      volume: zod.number(),
+    }),
+  ),
+});
+
+/**
  * Fetch OHLCV stats, buy/sell pressure, and DEX breakdown from DexScreener
  * @summary Get market data from DexScreener
  */

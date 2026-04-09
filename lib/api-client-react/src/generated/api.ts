@@ -15,8 +15,10 @@ import type {
 
 import type {
   ErrorResponse,
+  GetOHLCVParams,
   HealthStatus,
   MarketDataResponse,
+  OHLCVResponse,
   SearchTokensParams,
   TokenMetadata,
   TokenPriceResponse,
@@ -286,6 +288,117 @@ export function useGetTokenMetadata<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetTokenMetadataQueryOptions(mintAddress, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Fetch historical candlestick data from GeckoTerminal for a token
+ * @summary Get historical OHLCV candle data
+ */
+export const getGetOHLCVUrl = (
+  mintAddress: string,
+  params?: GetOHLCVParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/jupiter/ohlcv/${mintAddress}?${stringifiedParams}`
+    : `/api/jupiter/ohlcv/${mintAddress}`;
+};
+
+export const getOHLCV = async (
+  mintAddress: string,
+  params?: GetOHLCVParams,
+  options?: RequestInit,
+): Promise<OHLCVResponse> => {
+  return customFetch<OHLCVResponse>(getGetOHLCVUrl(mintAddress, params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetOHLCVQueryKey = (
+  mintAddress: string,
+  params?: GetOHLCVParams,
+) => {
+  return [
+    `/api/jupiter/ohlcv/${mintAddress}`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetOHLCVQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOHLCV>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  mintAddress: string,
+  params?: GetOHLCVParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOHLCV>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetOHLCVQueryKey(mintAddress, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getOHLCV>>> = ({
+    signal,
+  }) => getOHLCV(mintAddress, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!mintAddress,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getOHLCV>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type GetOHLCVQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getOHLCV>>
+>;
+export type GetOHLCVQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get historical OHLCV candle data
+ */
+
+export function useGetOHLCV<
+  TData = Awaited<ReturnType<typeof getOHLCV>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  mintAddress: string,
+  params?: GetOHLCVParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOHLCV>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOHLCVQueryOptions(mintAddress, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -93,6 +93,54 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /jupiter/ohlcv/{mintAddress}:
+    get:
+      operationId: getOHLCV
+      tags: [jupiter]
+      summary: Get historical OHLCV candle data
+      description: Fetch historical candlestick data from GeckoTerminal for a token
+      parameters:
+        - name: mintAddress
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Solana token mint address
+        - name: resolution
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [5m, 15m, 1h, 4h, 1d]
+            default: 1h
+          description: Candle resolution
+        - name: bars
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 500
+          description: Number of candles to fetch
+      responses:
+        "200":
+          description: OHLCV candle data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OHLCVResponse"
+        "404":
+          description: No trading pairs found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /jupiter/market/{mintAddress}:
     get:
       operationId: getMarketData
@@ -334,6 +382,53 @@ components:
       required:
         - mintAddress
         - rawResponse
+
+    OHLCVCandle:
+      type: object
+      properties:
+        time:
+          type: number
+          description: Unix timestamp in seconds
+        open:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        close:
+          type: number
+        volume:
+          type: number
+      required:
+        - time
+        - open
+        - high
+        - low
+        - close
+        - volume
+
+    OHLCVResponse:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        pairAddress:
+          type: ["string", "null"]
+        dexId:
+          type: ["string", "null"]
+        resolution:
+          type: string
+        bars:
+          type: number
+        candles:
+          type: array
+          items:
+            $ref: "#/components/schemas/OHLCVCandle"
+      required:
+        - mintAddress
+        - resolution
+        - bars
+        - candles
 
     TimeframeStat:
       type: object

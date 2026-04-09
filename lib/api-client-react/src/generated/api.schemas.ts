@@ -104,6 +104,27 @@ export interface TokenPriceResponse {
   rawResponse: TokenPriceResponseRawResponse;
 }
 
+export interface OHLCVCandle {
+  /** Unix timestamp in seconds */
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface OHLCVResponse {
+  mintAddress: string;
+  /** @nullable */
+  pairAddress?: string | null;
+  /** @nullable */
+  dexId?: string | null;
+  resolution: string;
+  bars: number;
+  candles: OHLCVCandle[];
+}
+
 export interface TimeframeStat {
   buys: number;
   sells: number;
@@ -216,3 +237,25 @@ export type SearchTokensParams = {
    */
   query: string;
 };
+
+export type GetOHLCVParams = {
+  /**
+   * Candle resolution
+   */
+  resolution?: GetOHLCVResolution;
+  /**
+   * Number of candles to fetch
+   */
+  bars?: number;
+};
+
+export type GetOHLCVResolution =
+  (typeof GetOHLCVResolution)[keyof typeof GetOHLCVResolution];
+
+export const GetOHLCVResolution = {
+  "5m": "5m",
+  "15m": "15m",
+  "1h": "1h",
+  "4h": "4h",
+  "1d": "1d",
+} as const;

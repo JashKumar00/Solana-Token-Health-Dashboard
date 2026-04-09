@@ -309,6 +309,95 @@ router.get(
   }
 );
 
+const geckoFetch = async (path: string) => {
+  const url = `https://api.geckoterminal.com${path}`;
+  const response = await fetch(url, {
+    headers: { "Accept": "application/json;version=20230302" },
+  });
+  const data = await response.json();
+  return { data, status: response.status };
+};
+
+const RESOLUTION_MAP: Record<string, { timeframe: string; aggregate: number }> = {
+  "5m":  { timeframe: "minute", aggregate: 5 },
+  "15m": { timeframe: "minute", aggregate: 15 },
+  "1h":  { timeframe: "hour",   aggregate: 1 },
+  "4h":  { timeframe: "hour",   aggregate: 4 },
+  "1d":  { timeframe: "day",    aggregate: 1 },
+};
+
+router.get(
+  "/jupiter/ohlcv/:mintAddress",
+  async (req, res): Promise<void> => {
+    const rawParam = req.params["mintAddress"];
+    const mintAddress = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+    const resolution = (req.query["resolution"] as string) ?? "1h";
+    const bars = Math.min(Number(req.query["bars"] ?? 1000), 1000);
+
+    if (!mintAddress) {
+      res.status(400).json({ error: "mintAddress is required" });
+      return;
+    }
+
+    const resConfig = RESOLUTION_MAP[resolution] ?? RESOLUTION_MAP["1h"];
+
+    // Get best pair from DexScreener
+    const { data: dexData, status: dexStatus } = await dexScreenerFetch(
+      `/latest/dex/tokens/${mintAddress}`
+    );
+
+    if (dexStatus !== 200) {
+      res.status(dexStatus).json({ error: `DexScreener returned ${dexStatus}` });
+      return;
+    }
+
+    const dexResult = dexData as { pairs?: Array<{ dexId: string; pairAddress: string; liquidity?: { usd?: number }; chainId?: string }> };
+    const pairs = dexResult.pairs ?? [];
+    const solanaPairs = pairs.filter(p => !p.chainId || p.chainId === "solana");
+
+    if (solanaPairs.length === 0) {
+      res.status(404).json({ error: "No Solana trading pairs found" });
+      return;
+    }
+
+    const bestPair = [...solanaPairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0];
+
+    // Fetch OHLCV from GeckoTerminal
+    const { data: geckoData, status: geckoStatus } = await geckoFetch(
+      `/api/v2/networks/solana/pools/${bestPair.pairAddress}/ohlcv/${resConfig.timeframe}?aggregate=${resConfig.aggregate}&limit=${bars}&currency=usd&token=base`
+    );
+
+    if (geckoStatus !== 200) {
+      res.status(geckoStatus).json({ error: `GeckoTerminal returned ${geckoStatus}`, details: JSON.stringify(geckoData) });
+      return;
+    }
+
+    const raw = geckoData as { data?: { attributes?: { ohlcv_list?: number[][] } } };
+    const ohlcvList = raw.data?.attributes?.ohlcv_list ?? [];
+
+    // GeckoTerminal returns newest first — sort ascending by time
+    const candles = ohlcvList
+      .map((c: number[]) => ({
+        time: c[0]!,   // GeckoTerminal already returns Unix seconds
+        open: c[1]!,
+        high: c[2]!,
+        low: c[3]!,
+        close: c[4]!,
+        volume: c[5]!,
+      }))
+      .sort((a: {time:number}, b: {time:number}) => a.time - b.time);
+
+    res.json({
+      mintAddress,
+      pairAddress: bestPair.pairAddress,
+      dexId: bestPair.dexId,
+      resolution,
+      bars: candles.length,
+      candles,
+    });
+  }
+);
+
 const dexScreenerFetch = async (path: string) => {
   const url = `https://api.dexscreener.com${path}`;
   const response = await fetch(url, {
