@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { PriceChartCard } from "@/components/PriceChart";
 import { MarketStatsPanel } from "@/components/MarketStats";
+import { ParticleBackground } from "@/components/ParticleBackground";
 import {
   useGetTokenMetadata,
   useGetTokenPrice,
@@ -251,11 +252,13 @@ function PriceCard({ mintAddress }: { mintAddress: string }) {
       ) : (
         <>
           <span
-            className="text-5xl font-bold tracking-tight"
+            className="font-orbitron text-5xl font-bold tracking-tight"
             style={{
               color: flash === "up" ? "#14F195" : flash === "down" ? "#FF4444" : "#FFFFFF",
               transition: "color 0.5s",
-              textShadow: flash ? `0 0 30px ${flash === "up" ? "#14F195" : "#FF4444"}` : undefined,
+              textShadow: flash
+                ? `0 0 20px ${flash === "up" ? "#14F195" : "#FF4444"}, 0 0 50px ${flash === "up" ? "rgba(20,241,149,0.4)" : "rgba(255,68,68,0.4)"}`
+                : "0 0 15px rgba(255,255,255,0.2)",
             }}
           >
             {formatPrice(currentPrice)}
@@ -306,22 +309,20 @@ function HeroTokenCard({ token }: { token: TokenMeta }) {
   return (
     <div className="glass-card p-6 flex flex-col md:flex-row items-start md:items-center gap-6" data-testid="token-card">
       <div className="relative flex-shrink-0">
-        {token.logoURI ? (
-          <img
-            src={token.logoURI} alt={token.symbol}
-            className="w-20 h-20 rounded-full object-cover"
-            style={{ boxShadow: "0 0 20px rgba(153,69,255,0.4),0 0 40px rgba(153,69,255,0.15)", border: "2px solid rgba(153,69,255,0.4)" }}
-          />
-        ) : (
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
-            style={{ background: "rgba(153,69,255,0.2)", boxShadow: "0 0 20px rgba(153,69,255,0.4)", border: "2px solid rgba(153,69,255,0.4)", color: "#9945FF" }}
-          >
-            {token.symbol.slice(0, 2)}
+        <div className="relative w-20 h-20">
+          <div className="logo-glow-ring" />
+          <div className="absolute inset-[3px] rounded-full overflow-hidden" style={{ background: "#050508" }}>
+            {token.logoURI ? (
+              <img src={token.logoURI} alt={token.symbol} className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold font-orbitron" style={{ background: "rgba(153,69,255,0.2)", color: "#9945FF" }}>
+                {token.symbol.slice(0, 2)}
+              </div>
+            )}
           </div>
-        )}
+        </div>
         {token.verified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#9945FF", boxShadow: "0 0 10px #9945FF" }}>
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#9945FF", boxShadow: "0 0 12px #9945FF, 0 0 24px rgba(153,69,255,0.5)" }}>
             ✓
           </div>
         )}
@@ -384,10 +385,15 @@ function MetricCard({ icon: Icon, label, value, color }: { icon: React.ElementTy
   return (
     <div className="glass-card p-5 flex flex-col gap-3" data-testid={`metric-${label.toLowerCase().replace(/\s+/g, "-")}`}>
       <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4" style={{ color: color ?? "#8888aa" }} />
+        <Icon className="w-4 h-4" style={{ color: color ?? "#8888aa", filter: color ? `drop-shadow(0 0 4px ${color})` : undefined }} />
         <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">{label}</span>
       </div>
-      <div className={`font-bold ${isNA ? "text-muted-foreground text-xs" : "text-white text-xl"}`}>{value}</div>
+      <div
+        className={`font-bold font-orbitron ${isNA ? "text-muted-foreground text-xs" : "text-xl"}`}
+        style={!isNA && color ? { color, textShadow: `0 0 12px ${color}66` } : undefined}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -763,47 +769,103 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0a0a0f" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#050508" }}>
+      {/* Layered backgrounds */}
+      <ParticleBackground />
+      <div className="aurora-bg">
+        <div className="aurora-blob" />
+        <div className="aurora-blob" />
+        <div className="aurora-blob" />
+        <div className="aurora-blob" />
+      </div>
+      <div className="grid-overlay" />
+      <div className="scanlines" />
+
+      {/* Ticker tape */}
+      <div className="relative z-30 border-b ticker-tape py-1.5" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.8)" }}>
+        <div className="ticker-inner text-xs font-mono">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <span key={i}>
+              <span style={{ color: "#9945FF" }}>◈ SOL</span>&nbsp;
+              <span style={{ color: "#14F195" }}>BONK</span>&nbsp;·&nbsp;
+              <span style={{ color: "#00CFFF" }}>JUP</span>&nbsp;·&nbsp;
+              <span style={{ color: "#FF1493" }}>WIF</span>&nbsp;·&nbsp;
+              <span style={{ color: "#FFB800" }}>POPCAT</span>&nbsp;·&nbsp;
+              <span style={{ color: "#14F195" }}>TRUMP</span>&nbsp;·&nbsp;
+              <span style={{ color: "#9945FF" }}>PEPE</span>&nbsp;·&nbsp;
+              <span style={{ color: "#00CFFF" }}>DOGE</span>&nbsp;·&nbsp;
+              <span style={{ color: "#FF1493" }}>SHIB</span>&nbsp;·&nbsp;
+              <span style={{ color: "#FFB800" }}>FLOKI</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Top Bar */}
-      <header className="px-6 py-4 flex items-center justify-between border-b sticky top-0 z-40" style={{ borderColor: "#1a1a2e", background: "rgba(10,10,15,0.95)", backdropFilter: "blur(16px)" }}>
+      <header className="relative z-40 px-6 py-4 flex items-center justify-between border-b sticky top-0" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.85)", backdropFilter: "blur(20px)" }}>
         <button onClick={goHome} className="group text-left" data-testid="logo-home-button">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span
-              className="text-2xl font-bold transition-all group-hover:scale-110"
-              style={{ color: "#9945FF", textShadow: "0 0 20px rgba(153,69,255,0.6)", filter: "drop-shadow(0 0 8px #9945FF)" }}
+              className="text-3xl font-bold transition-all group-hover:scale-110"
+              style={{ color: "#9945FF", filter: "drop-shadow(0 0 12px #9945FF) drop-shadow(0 0 24px rgba(153,69,255,0.5))" }}
             >
               ◈
             </span>
-            <span className="text-xl font-bold text-white group-hover:text-primary transition-colors">Jupiter Token Health</span>
+            <div>
+              <div
+                className="font-orbitron text-lg font-bold tracking-wide glitch"
+                data-text="Jupiter Token Health"
+                style={{ color: "#FFFFFF", textShadow: "0 0 20px rgba(153,69,255,0.5)" }}
+              >
+                Jupiter Token Health
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">Real-time Solana intelligence</p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time token intelligence powered by Jupiter APIs</p>
         </button>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full live-dot" style={{ background: "#14F195", boxShadow: "0 0 6px #14F195" }} />
-            <span className="text-xs font-bold text-secondary tracking-widest">LIVE</span>
+            <div className="w-2.5 h-2.5 rounded-full live-dot" style={{ background: "#14F195", boxShadow: "0 0 10px #14F195, 0 0 20px rgba(20,241,149,0.5)" }} />
+            <span className="text-xs font-bold tracking-widest neon-green">LIVE</span>
           </div>
           <div
-            className="text-xs px-3 py-1.5 rounded-full font-semibold"
-            style={{ background: "rgba(153,69,255,0.15)", border: "1px solid rgba(153,69,255,0.3)", color: "#9945FF" }}
+            className="text-xs px-3 py-1.5 rounded-full font-semibold glow-btn badge-shimmer"
+            style={{ border: "1px solid rgba(153,69,255,0.5)", color: "#9945FF" }}
           >
-            Powered by Jupiter
+            ⚡ Powered by Jupiter
           </div>
         </div>
       </header>
 
       {/* Main */}
-      <main className="flex-1 px-4 md:px-6 py-8 max-w-6xl mx-auto w-full">
-        <div className={`transition-all duration-500 ${selected ? "mb-8" : "flex items-center justify-center min-h-[60vh]"}`}>
-          <div className={`${selected ? "max-w-2xl mx-auto" : "w-full flex flex-col items-center gap-6"}`}>
+      <main className="relative z-10 flex-1 px-4 md:px-6 py-8 max-w-6xl mx-auto w-full">
+        <div className={`transition-all duration-500 ${selected ? "mb-8" : "flex items-center justify-center min-h-[58vh]"}`}>
+          <div className={`${selected ? "max-w-2xl mx-auto" : "w-full flex flex-col items-center gap-8"}`}>
             {!selected && (
-              <div className="text-center mb-4">
-                <h2 className="text-4xl font-bold text-white mb-3" style={{ textShadow: "0 0 40px rgba(153,69,255,0.3)" }}>
-                  Token Health Dashboard
+              <div className="text-center relative">
+                {/* Floating emoji icons */}
+                <span className="float-icon" style={{ top: "-60px", left: "8%", animationDuration: "5s", fontSize: "3rem" }}>🚀</span>
+                <span className="float-icon" style={{ top: "-40px", right: "10%", animationDuration: "6.5s", animationDelay: "-2s", fontSize: "2.5rem" }}>🌙</span>
+                <span className="float-icon" style={{ top: "20px", left: "-2%", animationDuration: "7s", animationDelay: "-4s", fontSize: "2rem" }}>💎</span>
+                <span className="float-icon" style={{ top: "0px", right: "-1%", animationDuration: "5.5s", animationDelay: "-1s", fontSize: "2rem" }}>⚡</span>
+                <span className="float-icon" style={{ bottom: "-20px", left: "18%", animationDuration: "8s", animationDelay: "-3s", fontSize: "2rem" }}>🔥</span>
+                <span className="float-icon" style={{ bottom: "-30px", right: "20%", animationDuration: "6s", animationDelay: "-5s", fontSize: "2rem" }}>💰</span>
+
+                <div className="text-xs font-orbitron tracking-widest mb-4 neon-cyan opacity-70">SOLANA · DEFI · MEME INTELLIGENCE</div>
+
+                <h2
+                  className="text-5xl md:text-7xl font-bold mb-5 glitch gradient-text font-orbitron leading-tight"
+                  data-text="Token Health Dashboard"
+                >
+                  Token Health<br />Dashboard
                 </h2>
-                <p className="text-muted-foreground max-w-lg mx-auto">
-                  Search any Solana token — or paste a wallet address to see all token holdings
+
+                <p className="text-muted-foreground max-w-lg mx-auto text-base mb-2">
+                  Search any Solana token — or paste a wallet address to see all holdings
+                </p>
+                <p className="text-xs text-muted-foreground opacity-60">
+                  🚀 Real-time prices · 📊 OHLCV charts · 💎 Organic score · 📋 DEX analytics
                 </p>
               </div>
             )}
@@ -819,9 +881,9 @@ export default function Dashboard() {
         )}
       </main>
 
-      <footer className="px-6 py-4 border-t flex items-center justify-between text-xs text-muted-foreground" style={{ borderColor: "#1a1a2e" }}>
-        <span>Data provided by Jupiter Developer Platform — developers.jup.ag</span>
-        <span>Last refresh: {lastRefresh.toLocaleTimeString()}</span>
+      <footer className="relative z-10 px-6 py-4 border-t flex items-center justify-between text-xs" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.6)", color: "#8888aa" }}>
+        <span>Data provided by Jupiter · DexScreener · GeckoTerminal</span>
+        <span className="font-orbitron text-xs" style={{ color: "#9945FF" }}>Last refresh: {lastRefresh.toLocaleTimeString()}</span>
       </footer>
     </div>
   );
