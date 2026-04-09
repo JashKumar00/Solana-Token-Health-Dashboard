@@ -38,7 +38,7 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 
   const [resolution, setResolution] = useState<Resolution>("1h");
-  const [countdown, setCountdown] = useState(30);
+  const [countdown, setCountdown] = useState(10);
   const [isFlashing, setIsFlashing] = useState(false);
   const [tooltip, setTooltip] = useState<{ time: string; open: number; high: number; low: number; close: number; volume: number; isUp: boolean } | null>(null);
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -81,12 +81,12 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
 
   // 30-second price refresh with countdown
   useEffect(() => {
-    setCountdown(30);
+    setCountdown(10);
     const interval = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) {
           queryClient.invalidateQueries({ queryKey: getGetTokenPriceQueryKey(mintAddress) });
-          return 30;
+          return 10;
         }
         return c - 1;
       });
@@ -361,7 +361,7 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
           <div
             className="h-full rounded-full"
             style={{
-              width: `${((30 - countdown) / 30) * 100}%`,
+              width: `${((10 - countdown) / 10) * 100}%`,
               background: "linear-gradient(90deg, #9945FF, #14F195)",
               transition: "width 1s linear",
             }}

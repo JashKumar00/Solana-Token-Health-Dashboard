@@ -187,7 +187,7 @@ function CircularProgressRing({ score }: { score: number | null }) {
 
 function PriceCard({ mintAddress }: { mintAddress: string }) {
   const queryClient = useQueryClient();
-  const [countdown, setCountdown] = useState(30);
+  const [countdown, setCountdown] = useState(10);
   const [prevPrice, setPrevPrice] = useState<string | null>(null);
   const [priceChange, setPriceChange] = useState<{ pct: number; dir: "up" | "down" | "same" } | null>(null);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
@@ -213,12 +213,12 @@ function PriceCard({ mintAddress }: { mintAddress: string }) {
   }, [currentPrice]);
 
   useEffect(() => {
-    setCountdown(30);
+    setCountdown(10);
     const t = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
           queryClient.invalidateQueries({ queryKey: getGetTokenPriceQueryKey(mintAddress) });
-          return 30;
+          return 10;
         }
         return c - 1;
       });
@@ -283,7 +283,7 @@ function PriceCard({ mintAddress }: { mintAddress: string }) {
           <div
             className="h-full rounded-full"
             style={{
-              width: `${(countdown / 30) * 100}%`,
+              width: `${(countdown / 10) * 100}%`,
               background: "linear-gradient(90deg,#9945FF,#14F195)",
               transition: "width 1s linear",
             }}
