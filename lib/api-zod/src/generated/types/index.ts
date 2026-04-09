@@ -18,3 +18,6 @@ export * from "./tokenPriceResponseRawResponse";
 export * from "./tokenSearchResponse";
 export * from "./tokenSearchResponseRawResponse";
 export * from "./tokenSearchResult";
+export * from "./walletPortfolioResponse";
+export * from "./walletPortfolioResponseRawBalances";
+export * from "./walletTokenHolding";

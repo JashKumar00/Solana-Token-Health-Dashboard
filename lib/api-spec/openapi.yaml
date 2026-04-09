@@ -93,6 +93,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /jupiter/wallet/{walletAddress}:
+    get:
+      operationId: getWalletPortfolio
+      tags: [jupiter]
+      summary: Get wallet token portfolio
+      description: Fetch all token holdings for a Solana wallet address
+      parameters:
+        - name: walletAddress
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Solana wallet address
+      responses:
+        "200":
+          description: Wallet portfolio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletPortfolioResponse"
+        "404":
+          description: Wallet not found or empty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Jupiter API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /jupiter/price/{mintAddress}:
     get:
       operationId: getTokenPrice
@@ -268,3 +301,57 @@ components:
       required:
         - mintAddress
         - rawResponse
+
+    WalletTokenHolding:
+      type: object
+      properties:
+        mint:
+          type: string
+        amount:
+          type: string
+        uiAmount:
+          type: number
+        name:
+          type: ["string", "null"]
+        symbol:
+          type: ["string", "null"]
+        logoURI:
+          type: ["string", "null"]
+        verified:
+          type: ["boolean", "null"]
+        usdPrice:
+          type: ["number", "null"]
+        usdValue:
+          type: ["number", "null"]
+        organicScore:
+          type: ["number", "null"]
+        decimals:
+          type: ["number", "null"]
+        isFrozen:
+          type: boolean
+      required:
+        - mint
+        - amount
+        - uiAmount
+        - isFrozen
+
+    WalletPortfolioResponse:
+      type: object
+      properties:
+        walletAddress:
+          type: string
+        totalUsdValue:
+          type: ["number", "null"]
+        tokenCount:
+          type: number
+        holdings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletTokenHolding"
+        rawBalances:
+          type: object
+      required:
+        - walletAddress
+        - tokenCount
+        - holdings
+        - rawBalances

@@ -20,6 +20,7 @@ import type {
   TokenMetadata,
   TokenPriceResponse,
   TokenSearchResponse,
+  WalletPortfolioResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -284,6 +285,102 @@ export function useGetTokenMetadata<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetTokenMetadataQueryOptions(mintAddress, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Fetch all token holdings for a Solana wallet address
+ * @summary Get wallet token portfolio
+ */
+export const getGetWalletPortfolioUrl = (walletAddress: string) => {
+  return `/api/jupiter/wallet/${walletAddress}`;
+};
+
+export const getWalletPortfolio = async (
+  walletAddress: string,
+  options?: RequestInit,
+): Promise<WalletPortfolioResponse> => {
+  return customFetch<WalletPortfolioResponse>(
+    getGetWalletPortfolioUrl(walletAddress),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetWalletPortfolioQueryKey = (walletAddress: string) => {
+  return [`/api/jupiter/wallet/${walletAddress}`] as const;
+};
+
+export const getGetWalletPortfolioQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWalletPortfolio>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  walletAddress: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWalletPortfolio>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetWalletPortfolioQueryKey(walletAddress);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getWalletPortfolio>>
+  > = ({ signal }) =>
+    getWalletPortfolio(walletAddress, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!walletAddress,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWalletPortfolio>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWalletPortfolioQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWalletPortfolio>>
+>;
+export type GetWalletPortfolioQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get wallet token portfolio
+ */
+
+export function useGetWalletPortfolio<
+  TData = Awaited<ReturnType<typeof getWalletPortfolio>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  walletAddress: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWalletPortfolio>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWalletPortfolioQueryOptions(
+    walletAddress,
+    options,
+  );
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

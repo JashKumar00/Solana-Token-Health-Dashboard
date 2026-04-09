@@ -77,6 +77,37 @@ export const GetTokenMetadataResponse = zod.object({
 });
 
 /**
+ * Fetch all token holdings for a Solana wallet address
+ * @summary Get wallet token portfolio
+ */
+export const GetWalletPortfolioParams = zod.object({
+  walletAddress: zod.coerce.string().describe("Solana wallet address"),
+});
+
+export const GetWalletPortfolioResponse = zod.object({
+  walletAddress: zod.string(),
+  totalUsdValue: zod.number().nullish(),
+  tokenCount: zod.number(),
+  holdings: zod.array(
+    zod.object({
+      mint: zod.string(),
+      amount: zod.string(),
+      uiAmount: zod.number(),
+      name: zod.string().nullish(),
+      symbol: zod.string().nullish(),
+      logoURI: zod.string().nullish(),
+      verified: zod.boolean().nullish(),
+      usdPrice: zod.number().nullish(),
+      usdValue: zod.number().nullish(),
+      organicScore: zod.number().nullish(),
+      decimals: zod.number().nullish(),
+      isFrozen: zod.boolean(),
+    }),
+  ),
+  rawBalances: zod.object({}).passthrough(),
+});
+
+/**
  * Fetch live token price from Jupiter Price API v2
  * @summary Get token price
  */

@@ -309,4 +309,183 @@ router.get(
   }
 );
 
+router.get(
+  "/jupiter/wallet/:walletAddress",
+  async (req, res): Promise<void> => {
+    const rawParam = req.params["walletAddress"];
+    const walletAddress = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+
+    if (!walletAddress) {
+      res.status(400).json({ error: "walletAddress is required" });
+      return;
+    }
+
+    const { data: balanceData, status: balanceStatus } = await jupiterFetch(
+      `/ultra/v1/balances/${walletAddress}`
+    );
+
+    if (balanceStatus === 401 || balanceStatus === 403) {
+      res.status(500).json({
+        error: `Jupiter API returned ${balanceStatus} — check your API key`,
+        details: JSON.stringify(balanceData),
+      });
+      return;
+    }
+    if (balanceStatus === 429) {
+      res.status(429).json({
+        error: "Jupiter API rate limit hit — try again in a few seconds",
+        details: JSON.stringify(balanceData),
+      });
+      return;
+    }
+    if (balanceStatus !== 200) {
+      res.status(balanceStatus).json({
+        error: `Jupiter API returned ${balanceStatus}`,
+        details: JSON.stringify(balanceData),
+      });
+      return;
+    }
+
+    const balances = balanceData as Record<
+      string,
+      { amount: string; uiAmount: number; slot: number; isFrozen: boolean }
+    >;
+
+    const mintKeys = Object.keys(balances).filter(
+      (k) =>
+        k !== "SOL" &&
+        balances[k].uiAmount > 0
+    );
+
+    const solBalance = balances["SOL"];
+
+    const topMints = mintKeys
+      .sort((a, b) => balances[b].uiAmount - balances[a].uiAmount)
+      .slice(0, 25);
+
+    const metadataMap: Record<string, Record<string, unknown>> = {};
+
+    await Promise.all(
+      topMints.map(async (mint) => {
+        try {
+          const { data, status } = await jupiterFetch(
+            `/ultra/v1/search?query=${mint}`
+          );
+          if (status === 200 && Array.isArray(data) && data.length > 0) {
+            const tokens = data as Record<string, unknown>[];
+            const exact = tokens.find(
+              (t) => t["id"] === mint || t["address"] === mint
+            );
+            if (exact) {
+              metadataMap[mint] = exact;
+            } else {
+              metadataMap[mint] = tokens[0];
+            }
+          }
+        } catch {
+        }
+      })
+    );
+
+    const holdings: Array<{
+      mint: string;
+      amount: string;
+      uiAmount: number;
+      name: string | null;
+      symbol: string | null;
+      logoURI: string | null;
+      verified: boolean | null;
+      usdPrice: number | null;
+      usdValue: number | null;
+      organicScore: number | null;
+      decimals: number | null;
+      isFrozen: boolean;
+    }> = [];
+
+    if (solBalance && (solBalance.uiAmount > 0 || mintKeys.length === 0)) {
+      const solMeta = metadataMap["SOL"] ?? null;
+      const solPrice = solMeta ? Number(solMeta["usdPrice"] ?? 0) : null;
+
+      let resolvedSolPrice = solPrice;
+      if (!resolvedSolPrice) {
+        try {
+          const { data: solSearch } = await jupiterFetch(
+            `/ultra/v1/search?query=SOL`
+          );
+          if (Array.isArray(solSearch) && solSearch.length > 0) {
+            const solToken = (solSearch as Record<string, unknown>[]).find(
+              (t) => t["symbol"] === "SOL" && t["isVerified"] === true
+            );
+            if (solToken) resolvedSolPrice = Number(solToken["usdPrice"] ?? 0);
+          }
+        } catch {}
+      }
+
+      holdings.push({
+        mint: "SOL",
+        amount: String(solBalance.amount),
+        uiAmount: solBalance.uiAmount,
+        name: "Solana",
+        symbol: "SOL",
+        logoURI:
+          "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+        verified: true,
+        usdPrice: resolvedSolPrice,
+        usdValue:
+          resolvedSolPrice != null
+            ? solBalance.uiAmount * resolvedSolPrice
+            : null,
+        organicScore: 98,
+        decimals: 9,
+        isFrozen: solBalance.isFrozen,
+      });
+    }
+
+    for (const mint of topMints) {
+      const bal = balances[mint];
+      const meta = metadataMap[mint];
+      const usdPrice = meta ? Number(meta["usdPrice"] ?? 0) || null : null;
+      const usdValue =
+        usdPrice != null ? bal.uiAmount * usdPrice : null;
+
+      holdings.push({
+        mint,
+        amount: String(bal.amount),
+        uiAmount: bal.uiAmount,
+        name: meta ? (meta["name"] as string) ?? null : null,
+        symbol: meta ? (meta["symbol"] as string) ?? null : null,
+        logoURI: meta ? ((meta["icon"] ?? meta["logoURI"]) as string) ?? null : null,
+        verified: meta ? (meta["isVerified"] as boolean) ?? null : null,
+        usdPrice,
+        usdValue,
+        organicScore: meta
+          ? Number(meta["organicScore"] ?? 0) || null
+          : null,
+        decimals: meta ? Number(meta["decimals"] ?? 0) || null : null,
+        isFrozen: bal.isFrozen,
+      });
+    }
+
+    holdings.sort((a, b) => {
+      const valA = a.usdValue ?? -1;
+      const valB = b.usdValue ?? -1;
+      if (valB !== valA) return valB - valA;
+      return b.uiAmount - a.uiAmount;
+    });
+
+    const totalUsdValue = holdings.reduce(
+      (sum, h) => (h.usdValue != null ? sum + h.usdValue : sum),
+      0
+    );
+
+    res.json({
+      walletAddress,
+      totalUsdValue: totalUsdValue > 0 ? totalUsdValue : null,
+      tokenCount: holdings.length,
+      holdings,
+      rawBalances: balanceData,
+    });
+  }
+);
+
 export default router;

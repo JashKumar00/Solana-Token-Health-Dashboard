@@ -104,6 +104,40 @@ export interface TokenPriceResponse {
   rawResponse: TokenPriceResponseRawResponse;
 }
 
+export interface WalletTokenHolding {
+  mint: string;
+  amount: string;
+  uiAmount: number;
+  /** @nullable */
+  name?: string | null;
+  /** @nullable */
+  symbol?: string | null;
+  /** @nullable */
+  logoURI?: string | null;
+  /** @nullable */
+  verified?: boolean | null;
+  /** @nullable */
+  usdPrice?: number | null;
+  /** @nullable */
+  usdValue?: number | null;
+  /** @nullable */
+  organicScore?: number | null;
+  /** @nullable */
+  decimals?: number | null;
+  isFrozen: boolean;
+}
+
+export type WalletPortfolioResponseRawBalances = { [key: string]: unknown };
+
+export interface WalletPortfolioResponse {
+  walletAddress: string;
+  /** @nullable */
+  totalUsdValue?: number | null;
+  tokenCount: number;
+  holdings: WalletTokenHolding[];
+  rawBalances: WalletPortfolioResponseRawBalances;
+}
+
 export type SearchTokensParams = {
   /**
    * Token name, symbol, or mint address to search for
