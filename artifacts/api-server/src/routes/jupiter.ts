@@ -309,6 +309,121 @@ router.get(
   }
 );
 
+const dexScreenerFetch = async (path: string) => {
+  const url = `https://api.dexscreener.com${path}`;
+  const response = await fetch(url, {
+    headers: { "Accept": "application/json" },
+  });
+  const data = await response.json();
+  return { data, status: response.status };
+};
+
+router.get(
+  "/jupiter/market/:mintAddress",
+  async (req, res): Promise<void> => {
+    const rawParam = req.params["mintAddress"];
+    const mintAddress = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+
+    if (!mintAddress) {
+      res.status(400).json({ error: "mintAddress is required" });
+      return;
+    }
+
+    const { data, status } = await dexScreenerFetch(
+      `/latest/dex/tokens/${mintAddress}`
+    );
+
+    if (status !== 200) {
+      res.status(status).json({ error: `DexScreener returned ${status}` });
+      return;
+    }
+
+    const result = data as {
+      pairs: Array<{
+        dexId: string;
+        pairAddress: string;
+        url?: string;
+        priceUsd?: string;
+        priceNative?: string;
+        priceChange?: { m5?: number; h1?: number; h6?: number; h24?: number };
+        txns?: { m5?: { buys: number; sells: number }; h1?: { buys: number; sells: number }; h6?: { buys: number; sells: number }; h24?: { buys: number; sells: number } };
+        volume?: { m5?: number; h1?: number; h6?: number; h24?: number };
+        liquidity?: { usd?: number; base?: number; quote?: number };
+        fdv?: number;
+        marketCap?: number;
+        pairCreatedAt?: number;
+      }>;
+    };
+
+    const pairs = result.pairs ?? [];
+
+    if (pairs.length === 0) {
+      res.status(404).json({ error: "No trading pairs found for this token" });
+      return;
+    }
+
+    const sortedByLiquidity = [...pairs].sort(
+      (a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0)
+    );
+
+    const bestPair = sortedByLiquidity[0];
+
+    const aggregate = (key: "m5" | "h1" | "h6" | "h24") => {
+      let buys = 0, sells = 0, volume = 0, priceChange = null as number | null;
+      const pairsWithData = pairs.filter(p => p.txns?.[key]);
+      for (const p of pairsWithData) {
+        buys += p.txns?.[key]?.buys ?? 0;
+        sells += p.txns?.[key]?.sells ?? 0;
+        volume += p.volume?.[key] ?? 0;
+      }
+      if (bestPair?.priceChange?.[key] != null) priceChange = bestPair.priceChange[key] ?? null;
+      return { buys, sells, volume: volume > 0 ? volume : null, priceChange };
+    };
+
+    const topPairs = sortedByLiquidity.slice(0, 10).map(p => ({
+      dexId: p.dexId,
+      pairAddress: p.pairAddress,
+      priceUsd: p.priceUsd ?? null,
+      liquidity: p.liquidity?.usd ?? null,
+      volume24h: p.volume?.h24 ?? null,
+      txns24h: {
+        buys: p.txns?.h24?.buys ?? 0,
+        sells: p.txns?.h24?.sells ?? 0,
+      },
+      priceChange24h: p.priceChange?.h24 ?? null,
+      url: p.url ?? null,
+    }));
+
+    const totalLiquidity = pairs.reduce((sum, p) => sum + (p.liquidity?.usd ?? 0), 0);
+
+    res.json({
+      mintAddress,
+      bestPriceUsd: bestPair?.priceUsd ?? null,
+      priceChanges: {
+        m5: bestPair?.priceChange?.m5 ?? null,
+        h1: bestPair?.priceChange?.h1 ?? null,
+        h6: bestPair?.priceChange?.h6 ?? null,
+        h24: bestPair?.priceChange?.h24 ?? null,
+      },
+      txns: {
+        m5: aggregate("m5"),
+        h1: aggregate("h1"),
+        h6: aggregate("h6"),
+        h24: aggregate("h24"),
+      },
+      volume: {
+        m5: pairs.reduce((s, p) => s + (p.volume?.m5 ?? 0), 0) || null,
+        h1: pairs.reduce((s, p) => s + (p.volume?.h1 ?? 0), 0) || null,
+        h6: pairs.reduce((s, p) => s + (p.volume?.h6 ?? 0), 0) || null,
+        h24: pairs.reduce((s, p) => s + (p.volume?.h24 ?? 0), 0) || null,
+      },
+      topPairs,
+      totalLiquidityUsd: totalLiquidity > 0 ? totalLiquidity : null,
+      pairCount: pairs.length,
+    });
+  }
+);
+
 router.get(
   "/jupiter/wallet/:walletAddress",
   async (req, res): Promise<void> => {

@@ -16,6 +16,7 @@ import type {
 import type {
   ErrorResponse,
   HealthStatus,
+  MarketDataResponse,
   SearchTokensParams,
   TokenMetadata,
   TokenPriceResponse,
@@ -285,6 +286,95 @@ export function useGetTokenMetadata<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetTokenMetadataQueryOptions(mintAddress, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Fetch OHLCV stats, buy/sell pressure, and DEX breakdown from DexScreener
+ * @summary Get market data from DexScreener
+ */
+export const getGetMarketDataUrl = (mintAddress: string) => {
+  return `/api/jupiter/market/${mintAddress}`;
+};
+
+export const getMarketData = async (
+  mintAddress: string,
+  options?: RequestInit,
+): Promise<MarketDataResponse> => {
+  return customFetch<MarketDataResponse>(getGetMarketDataUrl(mintAddress), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMarketDataQueryKey = (mintAddress: string) => {
+  return [`/api/jupiter/market/${mintAddress}`] as const;
+};
+
+export const getGetMarketDataQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMarketData>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  mintAddress: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMarketData>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetMarketDataQueryKey(mintAddress);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMarketData>>> = ({
+    signal,
+  }) => getMarketData(mintAddress, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!mintAddress,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMarketData>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMarketDataQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMarketData>>
+>;
+export type GetMarketDataQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get market data from DexScreener
+ */
+
+export function useGetMarketData<
+  TData = Awaited<ReturnType<typeof getMarketData>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  mintAddress: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMarketData>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMarketDataQueryOptions(mintAddress, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

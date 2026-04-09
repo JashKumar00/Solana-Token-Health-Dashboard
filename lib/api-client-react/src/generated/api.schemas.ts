@@ -104,6 +104,78 @@ export interface TokenPriceResponse {
   rawResponse: TokenPriceResponseRawResponse;
 }
 
+export interface TimeframeStat {
+  buys: number;
+  sells: number;
+  /** @nullable */
+  volume?: number | null;
+  /** @nullable */
+  priceChange?: number | null;
+}
+
+export type DexPairSummaryTxns24h = {
+  buys: number;
+  sells: number;
+};
+
+export interface DexPairSummary {
+  dexId: string;
+  pairAddress: string;
+  /** @nullable */
+  priceUsd?: string | null;
+  /** @nullable */
+  liquidity?: number | null;
+  /** @nullable */
+  volume24h?: number | null;
+  txns24h?: DexPairSummaryTxns24h;
+  /** @nullable */
+  priceChange24h?: number | null;
+  /** @nullable */
+  url?: string | null;
+}
+
+export type MarketDataResponsePriceChanges = {
+  /** @nullable */
+  m5?: number | null;
+  /** @nullable */
+  h1?: number | null;
+  /** @nullable */
+  h6?: number | null;
+  /** @nullable */
+  h24?: number | null;
+};
+
+export type MarketDataResponseTxns = {
+  m5?: TimeframeStat;
+  h1?: TimeframeStat;
+  h6?: TimeframeStat;
+  h24?: TimeframeStat;
+};
+
+export type MarketDataResponseVolume = {
+  /** @nullable */
+  m5?: number | null;
+  /** @nullable */
+  h1?: number | null;
+  /** @nullable */
+  h6?: number | null;
+  /** @nullable */
+  h24?: number | null;
+};
+
+export interface MarketDataResponse {
+  mintAddress: string;
+  /** @nullable */
+  bestPriceUsd?: string | null;
+  priceChanges?: MarketDataResponsePriceChanges;
+  txns?: MarketDataResponseTxns;
+  volume?: MarketDataResponseVolume;
+  topPairs: DexPairSummary[];
+  /** @nullable */
+  totalLiquidityUsd?: number | null;
+  pairCount: number;
+}
+
 export interface WalletTokenHolding {
   mint: string;
   amount: string;

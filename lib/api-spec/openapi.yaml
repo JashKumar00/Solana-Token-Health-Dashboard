@@ -93,6 +93,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /jupiter/market/{mintAddress}:
+    get:
+      operationId: getMarketData
+      tags: [jupiter]
+      summary: Get market data from DexScreener
+      description: Fetch OHLCV stats, buy/sell pressure, and DEX breakdown from DexScreener
+      parameters:
+        - name: mintAddress
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Solana token mint address
+      responses:
+        "200":
+          description: Market data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketDataResponse"
+        "404":
+          description: No pairs found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: DexScreener API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /jupiter/wallet/{walletAddress}:
     get:
       operationId: getWalletPortfolio
@@ -301,6 +334,105 @@ components:
       required:
         - mintAddress
         - rawResponse
+
+    TimeframeStat:
+      type: object
+      properties:
+        buys:
+          type: number
+        sells:
+          type: number
+        volume:
+          type: ["number", "null"]
+        priceChange:
+          type: ["number", "null"]
+      required:
+        - buys
+        - sells
+
+    DexPairSummary:
+      type: object
+      properties:
+        dexId:
+          type: string
+        pairAddress:
+          type: string
+        priceUsd:
+          type: ["string", "null"]
+        liquidity:
+          type: ["number", "null"]
+        volume24h:
+          type: ["number", "null"]
+        txns24h:
+          type: object
+          properties:
+            buys:
+              type: number
+            sells:
+              type: number
+          required:
+            - buys
+            - sells
+        priceChange24h:
+          type: ["number", "null"]
+        url:
+          type: ["string", "null"]
+      required:
+        - dexId
+        - pairAddress
+
+    MarketDataResponse:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        bestPriceUsd:
+          type: ["string", "null"]
+        priceChanges:
+          type: object
+          properties:
+            m5:
+              type: ["number", "null"]
+            h1:
+              type: ["number", "null"]
+            h6:
+              type: ["number", "null"]
+            h24:
+              type: ["number", "null"]
+        txns:
+          type: object
+          properties:
+            m5:
+              $ref: "#/components/schemas/TimeframeStat"
+            h1:
+              $ref: "#/components/schemas/TimeframeStat"
+            h6:
+              $ref: "#/components/schemas/TimeframeStat"
+            h24:
+              $ref: "#/components/schemas/TimeframeStat"
+        volume:
+          type: object
+          properties:
+            m5:
+              type: ["number", "null"]
+            h1:
+              type: ["number", "null"]
+            h6:
+              type: ["number", "null"]
+            h24:
+              type: ["number", "null"]
+        topPairs:
+          type: array
+          items:
+            $ref: "#/components/schemas/DexPairSummary"
+        totalLiquidityUsd:
+          type: ["number", "null"]
+        pairCount:
+          type: number
+      required:
+        - mintAddress
+        - pairCount
+        - topPairs
 
     WalletTokenHolding:
       type: object

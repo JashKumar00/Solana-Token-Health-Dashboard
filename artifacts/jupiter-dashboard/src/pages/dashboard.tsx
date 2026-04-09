@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SearchBar } from "@/components/SearchBar";
+import { PriceChartCard } from "@/components/PriceChart";
+import { MarketStatsPanel } from "@/components/MarketStats";
 import {
   useGetTokenMetadata,
   useGetTokenPrice,
@@ -659,8 +661,10 @@ function TokenDashboard({ mintAddress }: { mintAddress: string }) {
     <div className="flex flex-col gap-6 animate-in fade-in-0 duration-500">
       <HeroTokenCard token={tokenData as TokenMeta} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PriceCard mintAddress={mintAddress} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <PriceChartCard mintAddress={mintAddress} />
+        </div>
         <div className="glass-card p-6 flex flex-col items-center gap-4" data-testid="score-card">
           <div className="flex items-center justify-between w-full">
             <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">Organic Score</span>
@@ -678,6 +682,8 @@ function TokenDashboard({ mintAddress }: { mintAddress: string }) {
         <MetricCard icon={Droplets} label="Liquidity" value={formatNumber(tokenData.liquidity, "$")} color="#14F195" />
         <MetricCard icon={Users} label="Holders" value={tokenData.holder_count != null ? tokenData.holder_count.toLocaleString() : "N/A — not provided by API"} color="#9945FF" />
       </div>
+
+      <MarketStatsPanel mintAddress={mintAddress} />
 
       <Collapsible open={rawOpen} onOpenChange={setRawOpen}>
         <CollapsibleTrigger

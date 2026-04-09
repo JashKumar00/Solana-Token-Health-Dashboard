@@ -77,6 +77,90 @@ export const GetTokenMetadataResponse = zod.object({
 });
 
 /**
+ * Fetch OHLCV stats, buy/sell pressure, and DEX breakdown from DexScreener
+ * @summary Get market data from DexScreener
+ */
+export const GetMarketDataParams = zod.object({
+  mintAddress: zod.coerce.string().describe("Solana token mint address"),
+});
+
+export const GetMarketDataResponse = zod.object({
+  mintAddress: zod.string(),
+  bestPriceUsd: zod.string().nullish(),
+  priceChanges: zod
+    .object({
+      m5: zod.number().nullish(),
+      h1: zod.number().nullish(),
+      h6: zod.number().nullish(),
+      h24: zod.number().nullish(),
+    })
+    .optional(),
+  txns: zod
+    .object({
+      m5: zod
+        .object({
+          buys: zod.number(),
+          sells: zod.number(),
+          volume: zod.number().nullish(),
+          priceChange: zod.number().nullish(),
+        })
+        .optional(),
+      h1: zod
+        .object({
+          buys: zod.number(),
+          sells: zod.number(),
+          volume: zod.number().nullish(),
+          priceChange: zod.number().nullish(),
+        })
+        .optional(),
+      h6: zod
+        .object({
+          buys: zod.number(),
+          sells: zod.number(),
+          volume: zod.number().nullish(),
+          priceChange: zod.number().nullish(),
+        })
+        .optional(),
+      h24: zod
+        .object({
+          buys: zod.number(),
+          sells: zod.number(),
+          volume: zod.number().nullish(),
+          priceChange: zod.number().nullish(),
+        })
+        .optional(),
+    })
+    .optional(),
+  volume: zod
+    .object({
+      m5: zod.number().nullish(),
+      h1: zod.number().nullish(),
+      h6: zod.number().nullish(),
+      h24: zod.number().nullish(),
+    })
+    .optional(),
+  topPairs: zod.array(
+    zod.object({
+      dexId: zod.string(),
+      pairAddress: zod.string(),
+      priceUsd: zod.string().nullish(),
+      liquidity: zod.number().nullish(),
+      volume24h: zod.number().nullish(),
+      txns24h: zod
+        .object({
+          buys: zod.number(),
+          sells: zod.number(),
+        })
+        .optional(),
+      priceChange24h: zod.number().nullish(),
+      url: zod.string().nullish(),
+    }),
+  ),
+  totalLiquidityUsd: zod.number().nullish(),
+  pairCount: zod.number(),
+});
+
+/**
  * Fetch all token holdings for a Solana wallet address
  * @summary Get wallet token portfolio
  */
