@@ -319,6 +319,7 @@ const geckoFetch = async (path: string) => {
 };
 
 const RESOLUTION_MAP: Record<string, { timeframe: string; aggregate: number }> = {
+  "1m":  { timeframe: "minute", aggregate: 1 },
   "5m":  { timeframe: "minute", aggregate: 5 },
   "15m": { timeframe: "minute", aggregate: 15 },
   "1h":  { timeframe: "hour",   aggregate: 1 },

@@ -253,6 +253,7 @@ export type GetOHLCVResolution =
   (typeof GetOHLCVResolution)[keyof typeof GetOHLCVResolution];
 
 export const GetOHLCVResolution = {
+  "1m": "1m",
   "5m": "5m",
   "15m": "15m",
   "1h": "1h",

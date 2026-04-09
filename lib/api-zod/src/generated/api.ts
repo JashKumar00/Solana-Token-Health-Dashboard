@@ -89,7 +89,7 @@ export const getOHLCVQueryBarsDefault = 500;
 
 export const GetOHLCVQueryParams = zod.object({
   resolution: zod
-    .enum(["5m", "15m", "1h", "4h", "1d"])
+    .enum(["1m", "5m", "15m", "1h", "4h", "1d"])
     .default(getOHLCVQueryResolutionDefault)
     .describe("Candle resolution"),
   bars: zod.coerce

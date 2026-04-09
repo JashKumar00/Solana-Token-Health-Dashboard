@@ -4,9 +4,10 @@ import { useGetTokenPrice, useGetOHLCV, getGetTokenPriceQueryKey, getGetOHLCVQue
 import { useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, Zap, BarChart2 } from "lucide-react";
 
-type Resolution = "5m" | "15m" | "1h" | "4h" | "1d";
+type Resolution = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
 
 const RESOLUTIONS: { key: Resolution; label: string }[] = [
+  { key: "1m",  label: "1M"  },
   { key: "5m",  label: "5M"  },
   { key: "15m", label: "15M" },
   { key: "1h",  label: "1H"  },
@@ -14,13 +15,21 @@ const RESOLUTIONS: { key: Resolution; label: string }[] = [
   { key: "1d",  label: "1D"  },
 ];
 
+function getPriceFormat(price: number): { precision: number; minMove: number } {
+  if (!price || price <= 0 || !isFinite(price)) return { precision: 8, minMove: 0.00000001 };
+  if (price >= 1000) return { precision: 2, minMove: 0.01 };
+  if (price >= 1)    return { precision: 2, minMove: 0.01 };
+  const leadingZeros = Math.max(0, Math.ceil(-Math.log10(price)) - 1);
+  const precision = Math.min(leadingZeros + 5, 12);
+  const minMove = Math.pow(10, -precision);
+  return { precision, minMove };
+}
+
 function formatPrice(n: number): string {
   if (!n || n === 0) return "$0.00";
-  if (n < 0.000001) return `$${n.toExponential(4)}`;
-  if (n < 0.0001) return `$${n.toFixed(8)}`;
-  if (n < 0.01) return `$${n.toFixed(6)}`;
-  if (n < 1) return `$${n.toFixed(4)}`;
-  return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (n >= 1) return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const { precision } = getPriceFormat(n);
+  return `$${n.toFixed(precision)}`;
 }
 
 function formatVolume(v: number): string {
@@ -38,6 +47,7 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 
   const [resolution, setResolution] = useState<Resolution>("1h");
+  const [autoFallback, setAutoFallback] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [isFlashing, setIsFlashing] = useState(false);
   const [tooltip, setTooltip] = useState<{ time: string; open: number; high: number; low: number; close: number; volume: number; isUp: boolean } | null>(null);
@@ -230,6 +240,13 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
     }));
 
     try {
+      // Dynamically set price format based on actual price magnitude
+      const refPrice = ohlcvData.candles[ohlcvData.candles.length - 1]?.close ?? 0;
+      const fmt = getPriceFormat(refPrice);
+      candleSeriesRef.current.applyOptions({
+        priceFormat: { type: "price", precision: fmt.precision, minMove: fmt.minMove },
+      });
+
       candleSeriesRef.current.setData(candles);
       volumeSeriesRef.current.setData(volumes);
 
@@ -237,6 +254,27 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
       chartRef.current?.timeScale().scrollToRealTime();
     } catch {}
   }, [ohlcvData]);
+
+  // Auto-fallback to finer resolution when new coin has no data yet
+  const FALLBACK_ORDER: Resolution[] = ["1d", "4h", "1h", "15m", "5m", "1m"];
+  useEffect(() => {
+    if (ohlcvLoading) return;
+    if (!ohlcvData || ohlcvData.candles.length > 0) {
+      setAutoFallback(false);
+      return;
+    }
+    const idx = FALLBACK_ORDER.indexOf(resolution);
+    if (idx < FALLBACK_ORDER.length - 1) {
+      setAutoFallback(true);
+      setResolution(FALLBACK_ORDER[idx + 1]!);
+    }
+  }, [ohlcvData, ohlcvLoading]);
+
+  // Reset resolution when token changes
+  useEffect(() => {
+    setResolution("1h");
+    setAutoFallback(false);
+  }, [mintAddress]);
 
   // Compute price stats from current OHLCV candles
   const candles = ohlcvData?.candles ?? [];
@@ -323,13 +361,23 @@ export function PriceChartCard({ mintAddress }: { mintAddress: string }) {
           </div>
         )}
 
-        <div className="ml-auto text-right shrink-0">
+        <div className="ml-auto text-right shrink-0 flex flex-col items-end gap-1">
           {firstCandle && (
             <div className="text-xs text-muted-foreground">
               From {new Date(firstCandle.time * 1000).toLocaleDateString()}
             </div>
           )}
           <div className="text-xs text-muted-foreground">{candles.length} candles</div>
+          {autoFallback && candles.length > 0 && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(255,184,0,0.15)", color: "#FFB800", border: "1px solid rgba(255,184,0,0.3)" }}>
+              🚀 NEW — auto {resolution.toUpperCase()}
+            </span>
+          )}
+          {!autoFallback && candles.length > 0 && candles.length < 30 && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(255,184,0,0.12)", color: "#FFB800", border: "1px solid rgba(255,184,0,0.3)" }}>
+              ⚡ Fresh coin
+            </span>
+          )}
         </div>
       </div>
 
