@@ -9,7 +9,7 @@
 [![pnpm](https://img.shields.io/badge/managed%20with-pnpm-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/landing.jpg" alt="Jupiter Token Health — Landing Page" width="100%" />
+  <img src="screenshots/landing.jpg" alt="Jupiter Token Health — Landing Page" width="100%" />
 </p>
 
 ---
@@ -40,9 +40,9 @@ There is no single place that gives you the full picture — price action, on-ch
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/landing.jpg" alt="Landing Page" width="49%" />
+  <img src="screenshots/landing.jpg" alt="Landing Page" width="49%" />
   &nbsp;
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/dashboard.jpg" alt="Dashboard Main View" width="49%" />
+  <img src="screenshots/dashboard.jpg" alt="Dashboard Main View" width="49%" />
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@ There is no single place that gives you the full picture — price action, on-ch
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/pitch-deck.jpg" alt="Pitch Deck" width="80%" />
+  <img src="screenshots/pitch-deck.jpg" alt="Pitch Deck" width="80%" />
 </p>
 
 <p align="center">
