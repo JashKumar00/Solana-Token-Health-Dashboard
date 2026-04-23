@@ -212,7 +212,10 @@ pnpm --filter @workspace/api-server run dev
 # Terminal 2 — Frontend dashboard
 pnpm --filter @workspace/jupiter-dashboard run dev
 
-# Terminal 3 (optional) — Pitch deck presentation
+# Terminal 3 (optional) — Landing page
+pnpm --filter @workspace/landing run dev
+
+# Terminal 4 (optional) — Pitch deck presentation
 pnpm --filter @workspace/pitch-deck run dev
 ```
 
