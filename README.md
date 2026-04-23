@@ -9,7 +9,7 @@
 [![pnpm](https://img.shields.io/badge/managed%20with-pnpm-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/artifacts/pitch-deck/public/dashboard-screenshot.jpg" alt="Jupiter Token Health Dashboard — Main View" width="100%" />
+  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/landing.jpg" alt="Jupiter Token Health — Landing Page" width="100%" />
 </p>
 
 ---
@@ -40,13 +40,21 @@ There is no single place that gives you the full picture — price action, on-ch
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/artifacts/pitch-deck/public/dashboard-screenshot.jpg" alt="Dashboard Main View" width="49%" />
+  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/landing.jpg" alt="Landing Page" width="49%" />
   &nbsp;
-  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/artifacts/pitch-deck/public/dashboard-token-view.jpg" alt="Token Detail View" width="49%" />
+  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/dashboard.jpg" alt="Dashboard Main View" width="49%" />
 </p>
 
 <p align="center">
-  <em>Left: Dashboard main view &nbsp;·&nbsp; Right: Token detail &amp; DEX breakdown</em>
+  <em>Left: Landing page &nbsp;·&nbsp; Right: Token Health Dashboard</em>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JashKumar00/Solana-Token-Health-Dashboard/main/screenshots/pitch-deck.jpg" alt="Pitch Deck" width="80%" />
+</p>
+
+<p align="center">
+  <em>Pitch deck — Jupiter Token Health Dashboard presentation</em>
 </p>
 
 ---
@@ -113,16 +121,20 @@ There is no single place that gives you the full picture — price action, on-ch
 │   │   └── src/
 │   │       ├── routes/           # /api/jupiter/* route handlers
 │   │       └── app.ts            # Express app with proxy config
-│   ├── jupiter-dashboard/        # React + Vite frontend
+│   ├── jupiter-dashboard/        # React + Vite frontend (main dashboard)
 │   │   └── src/
 │   │       ├── pages/            # dashboard.tsx — main page
 │   │       └── components/       # PriceChart, MarketStats, WalletView, etc.
+│   ├── landing/                  # Marketing landing page (React + Vite)
+│   │   └── src/
+│   │       └── pages/            # Landing, features, data sources sections
 │   └── pitch-deck/               # 7-slide presentation deck (React + Vite)
 │       └── src/pages/slides/
 ├── lib/
 │   ├── api-spec/                 # openapi.yaml — single source of truth for API
 │   ├── api-client-react/         # Auto-generated React Query hooks (via Orval)
 │   └── db/                       # Drizzle ORM schema and migrations
+├── screenshots/                  # Real screenshots of running apps
 └── scripts/                      # Post-merge and build scripts
 ```
 
