@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "vAblwTXLii9czd03Oel9o"
+uri = "file://artifacts/pitch-deck/public/hero-bg.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "74Raz4WilqHULg24DHEJS"
+uri = "file://artifacts/pitch-deck/public/logo-dexscreener.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0GJ8IEuaxskoA8dlooI6u"
+uri = "file://artifacts/pitch-deck/public/logo-geckoterminal.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "eMvfEy8mHDRYZyr-DDGAT"
+uri = "file://artifacts/pitch-deck/public/logo-jupiter.png"
+type = "image"
+title = "generated_image"

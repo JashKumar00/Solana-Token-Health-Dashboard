@@ -50,6 +50,14 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 - Logo click returns to home screen
 - Search history chips (saved to localStorage)
 
+### Landing Page (`artifacts/landing`)
+- React + Vite marketing/landing page at `/landing/` (previewPath: /landing/)
+- Premium dark aesthetic: Instrument Serif italic headings, Barlow body, liquid glass glassmorphism, neon cyan/purple palette
+- Sections: Navbar (Open App → dashboard), Hero with mock dashboard preview, Problems, How It Works (HLS video bg), Features Chess (health score ring + wallet preview), Features Grid, Stats (HLS video bg), Testimonials, CTA + Footer (HLS video bg)
+- "Open App" button links to `/` (the jupiter-dashboard)
+- No backend, no API calls — purely visual/marketing
+- framer-motion animations (BlurText, scroll-triggered), hls.js for video backgrounds, animated token ticker
+
 ### API Server (`artifacts/api-server`)
 - Express 5 backend at `/api`
 - Jupiter API routes (all using `x-api-key` header with Jupiter developer key):

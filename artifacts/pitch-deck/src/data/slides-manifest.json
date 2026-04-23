@@ -1,0 +1,58 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567801",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide01Title.tsx",
+    "title": "Title — Jupiter Token Health Dashboard",
+    "description": "Hero title slide with blockchain network background and project introduction.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567802",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide02Problem.tsx",
+    "title": "The Challenge",
+    "description": "The problem: too much crypto noise, not enough signal. Big stat: 10K+ tokens per day.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567803",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide03Solution.tsx",
+    "title": "The Solution",
+    "description": "One terminal, every signal — the dashboard as a unified intelligence layer.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567804",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide04Features.tsx",
+    "title": "Core Features",
+    "description": "Three core pillars: Price Charts, Organic Score, and Wallet Analytics.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567805",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide05DataSources.tsx",
+    "title": "Data Layer",
+    "description": "Three APIs powering the dashboard: Jupiter, DexScreener, and GeckoTerminal.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567806",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide06TechStack.tsx",
+    "title": "Tech Stack",
+    "description": "Modern full-stack TypeScript: React 19, Vite, Express, Drizzle ORM, pnpm monorepo.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567807",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide07Closing.tsx",
+    "title": "Closing — Built for Signal Hunters",
+    "description": "Closing slide with GitHub link, key stats, and project tagline.",
+    "speakerNotes": ""
+  }
+]

@@ -108,7 +108,7 @@ export function SearchBar({
 
   return (
     <div className="w-full max-w-2xl mx-auto relative flex flex-col gap-4" ref={containerRef}>
-      <div className="relative animate-border-gradient rounded-xl border border-border transition-colors">
+      <div className="relative search-focus-wrap rounded-xl border border-border transition-colors">
         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-muted-foreground" />
         </div>
@@ -142,7 +142,7 @@ export function SearchBar({
                 onClick={handleViewAsToken}
                 data-testid="view-as-token-button"
               >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(153,69,255,0.2)", color: "#9945FF" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(124,95,255,0.2)", color: "#7c5fff" }}>
                   <Search className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
@@ -156,7 +156,7 @@ export function SearchBar({
                 onClick={handleViewAsWallet}
                 data-testid="view-as-wallet-button"
               >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(20,241,149,0.15)", color: "#14F195" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(0,245,212,0.15)", color: "#00f5d4" }}>
                   <Wallet className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
@@ -198,7 +198,7 @@ export function SearchBar({
                     <div className="text-xs text-muted-foreground">{token.symbol}</div>
                   </div>
                   {token.verified && (
-                    <span className="text-xs" style={{ color: "#9945FF" }}>✓</span>
+                    <span className="text-xs" style={{ color: "#7c5fff" }}>✓</span>
                   )}
                   <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>

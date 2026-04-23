@@ -1,0 +1,28 @@
+ADD A CRYPTO DONATE BUTTON & PAGE to the Jupiter Token Health Dashboard.
+DONATE BUTTON: Add a small floating button in the bottom-right corner of every page. Style: glassmorphism pill shape, purple-to-cyan gradient border, heart/diamond icon + "DONATE" text in Orbitron font. Subtle pulse glow animation on idle. On hover: expand slightly with neon glow. Position: fixed, bottom 24px, right 24px, z-index 9999.
+DONATE PAGE: Clicking the button opens a new full page (donate.html) with the same dark #020008 background, particle star field, and aurora effects as the main dashboard.
+PAGE LAYOUT:
+Title: "SUPPORT THE PROJECT" in Orbitron gradient (purple→cyan). Subtitle: "Buy me a coffee with crypto — every contribution keeps the dashboard alive."
+TWO CHAIN CARDS side by side (responsive, stack on mobile):
+Card 1 — EVM / All Chains (ETH, BNB, MATIC, ARB, etc.):
+
+Chain icons row at top (ETH, BNB, MATIC, ARB, OP, AVAX)
+Label: "EVM COMPATIBLE CHAINS"
+Address: 0x44b3A9D938fbA6f0E4D545e1FC35dF3767d46eF4
+Show QR code generated from this address using qrcode.js library from CDN (https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)
+"COPY ADDRESS" button — on click copies address and shows "COPIED!" confirmation with green flash
+Card accent color: purple #7c5fff
+
+Card 2 — Solana:
+
+Solana logo at top
+Label: "SOLANA CHAIN"
+Address: FifvwoGhAtiNgJFjd86JHBVWZhQVwBC3W2rvMfVr53U7
+Show QR code generated from this address using same qrcode.js library
+"COPY ADDRESS" button — same copy behavior
+Card accent color: cyan #00f5d4 with Solana gradient purple
+
+CARD STYLING: Glassmorphism (backdrop-filter blur 20px), dark semi-transparent background, 1px gradient border top (matching accent color), hover 3D tilt effect using JS mousemove, neon box-shadow glow on hover.
+BELOW CARDS: Small note — "Scan QR or copy address. Send any amount on the correct chain. Thank you for supporting open-source crypto tools."
+BACK BUTTON: Top-left arrow button "← BACK TO DASHBOARD" that returns to index.html. Same glassmorphism pill style.
+TECHNICAL: Use qrcode.js from CDN to auto-generate both QR codes on page load using the wallet addresses. No hardcoded QR images. Pure HTML/CSS/JS. Same fonts (Orbitron + Share Tech Mono), same color palette (#020008, #7c5fff, #00f5d4, #ff2d78, #ffb86c), same particle background. Fully responsive.

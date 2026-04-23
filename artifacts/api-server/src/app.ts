@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -28,6 +29,14 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  createProxyMiddleware({
+    target: "http://localhost:18522",
+    changeOrigin: true,
+    pathFilter: "/pitch-deck",
+  }),
+);
 
 app.use("/api", router);
 

@@ -40,6 +40,66 @@ import {
 
 const SOL_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
+const HERO_COINS = [
+  {
+    symbol: "SOL",
+    logo: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+    spriteClass: "coin-sol",
+    fallbackColor: "#7c5fff",
+  },
+  {
+    symbol: "JUP",
+    logo: "https://static.jup.ag/jup/icon.png",
+    spriteClass: "coin-jup",
+    fallbackColor: "#00f5d4",
+  },
+  {
+    symbol: "WIF",
+    logo: "https://bafkreibk3covs5ltyqxa272uodhculbr6kea6betidfwy3ajsav2vjzyum.ipfs.nftstorage.link/",
+    spriteClass: "coin-wif",
+    fallbackColor: "#ff2d78",
+  },
+  {
+    symbol: "USDC",
+    logo: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+    spriteClass: "coin-usdc",
+    fallbackColor: "#2775CA",
+  },
+] as const;
+
+function HeroCoin({ symbol, logo, spriteClass, fallbackColor }: typeof HERO_COINS[number]) {
+  const [imgFailed, setImgFailed] = useState(false);
+  return (
+    <span className={`coin-sprite ${spriteClass}`}>
+      <span className="coin-img-wrap">
+        {!imgFailed && (
+          <img
+            src={logo}
+            alt={symbol}
+            onError={() => setImgFailed(true)}
+            style={{ display: imgFailed ? "none" : "block" }}
+          />
+        )}
+        {imgFailed && (
+          <span
+            className="coin-img-fallback"
+            style={{
+              background: `${fallbackColor}25`,
+              color: fallbackColor,
+              fontFamily: "'Orbitron', monospace",
+              fontWeight: 900,
+              fontSize: "0.5rem",
+            }}
+          >
+            {symbol.slice(0, 3)}
+          </span>
+        )}
+      </span>
+      <span className="coin-label">{symbol}</span>
+    </span>
+  );
+}
+
 function isSolanaAddress(str: string) {
   return SOL_ADDRESS_REGEX.test(str.trim());
 }
@@ -73,16 +133,18 @@ function truncateAddr(addr: string): string {
 
 function getScoreColor(score: number | null): string {
   if (score == null) return "#8888aa";
-  if (score >= 70) return "#14F195";
-  if (score >= 40) return "#FFB800";
+  if (score >= 90) return "#00f5d4";
+  if (score >= 70) return "#4488ff";
+  if (score >= 50) return "#ffb86c";
   return "#FF4444";
 }
 
 function getScoreLabel(score: number | null): string {
   if (score == null) return "Unknown";
-  if (score >= 70) return "HEALTHY";
-  if (score >= 40) return "CAUTION";
-  return "RISKY";
+  if (score >= 90) return "EXCELLENT";
+  if (score >= 70) return "GOOD";
+  if (score >= 50) return "MIXED";
+  return "CAUTION";
 }
 
 function getHealthRating(
@@ -90,9 +152,9 @@ function getHealthRating(
   score: number | null
 ): { label: string; color: string; icon: string } {
   if (verified && score != null && score > 70)
-    return { label: "SAFE TO MONITOR", color: "#14F195", icon: "✓" };
-  if (verified && score != null && score >= 40)
-    return { label: "MODERATE RISK", color: "#FFB800", icon: "⚠" };
+    return { label: "SAFE TO MONITOR", color: "#00f5d4", icon: "✓" };
+  if (verified && score != null && score >= 50)
+    return { label: "MODERATE RISK", color: "#ffb86c", icon: "⚠" };
   return { label: "HIGH RISK — Trade with caution", color: "#FF4444", icon: "✗" };
 }
 
@@ -101,11 +163,11 @@ function highlightJson(json: string): string {
     .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, (m) =>
       /:$/.test(m)
         ? `<span style="color:#8888aa">${m}</span>`
-        : `<span style="color:#14F195">${m}</span>`
+        : `<span style="color:#00f5d4">${m}</span>`
     )
-    .replace(/\b(true|false)\b/g, `<span style="color:#FFB800">$1</span>`)
+    .replace(/\b(true|false)\b/g, `<span style="color:#ffb86c">$1</span>`)
     .replace(/\bnull\b/g, `<span style="color:#FF4444">null</span>`)
-    .replace(/\b(-?\d+\.?\d*)\b/g, `<span style="color:#9945FF">$1</span>`);
+    .replace(/\b(-?\d+\.?\d*)\b/g, `<span style="color:#7c5fff">$1</span>`);
 }
 
 function useAnimatedNumber(target: number, duration = 1000) {
@@ -284,7 +346,7 @@ function PriceCard({ mintAddress }: { mintAddress: string }) {
             className="h-full rounded-full"
             style={{
               width: `${(countdown / 10) * 100}%`,
-              background: "linear-gradient(90deg,#9945FF,#14F195)",
+              background: "linear-gradient(90deg,#7c5fff,#00f5d4)",
               transition: "width 1s linear",
             }}
           />
@@ -311,18 +373,18 @@ function HeroTokenCard({ token }: { token: TokenMeta }) {
       <div className="relative flex-shrink-0">
         <div className="relative w-20 h-20">
           <div className="logo-glow-ring" />
-          <div className="absolute inset-[3px] rounded-full overflow-hidden" style={{ background: "#050508" }}>
+          <div className="absolute inset-[3px] rounded-full overflow-hidden" style={{ background: "#020008" }}>
             {token.logoURI ? (
               <img src={token.logoURI} alt={token.symbol} className="w-full h-full object-cover rounded-full" />
             ) : (
-              <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold font-orbitron" style={{ background: "rgba(153,69,255,0.2)", color: "#9945FF" }}>
+              <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold font-orbitron" style={{ background: "rgba(124,95,255,0.2)", color: "#7c5fff" }}>
                 {token.symbol.slice(0, 2)}
               </div>
             )}
           </div>
         </div>
         {token.verified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#9945FF", boxShadow: "0 0 12px #9945FF, 0 0 24px rgba(153,69,255,0.5)" }}>
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#7c5fff", boxShadow: "0 0 12px #7c5fff, 0 0 24px rgba(124,95,255,0.5)" }}>
             ✓
           </div>
         )}
@@ -333,11 +395,11 @@ function HeroTokenCard({ token }: { token: TokenMeta }) {
           <h1 className="text-3xl font-bold">{token.name}</h1>
           <span className="text-lg text-muted-foreground font-mono">{token.symbol}</span>
           {token.verified ? (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "#9945FF", background: "rgba(153,69,255,0.15)", border: "1px solid rgba(153,69,255,0.4)", boxShadow: "0 0 8px rgba(153,69,255,0.25)" }}>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "#7c5fff", background: "rgba(124,95,255,0.15)", border: "1px solid rgba(124,95,255,0.4)", boxShadow: "0 0 8px rgba(124,95,255,0.25)" }}>
               ✓ VERIFIED
             </span>
           ) : (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "#FFB800", background: "rgba(255,184,0,0.12)", border: "1px solid rgba(255,184,0,0.4)" }}>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "#ffb86c", background: "rgba(255,184,108,0.12)", border: "1px solid rgba(255,184,108,0.4)" }}>
               ⚠ UNVERIFIED
             </span>
           )}
@@ -380,10 +442,43 @@ function HeroTokenCard({ token }: { token: TokenMeta }) {
   );
 }
 
+function useTilt(ref: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    function onMove(e: MouseEvent) {
+      const rect = el!.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      el!.style.transform = `perspective(800px) rotateX(${-y * 10}deg) rotateY(${x * 10}deg) scale(1.02)`;
+    }
+    function onLeave() {
+      el!.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)";
+    }
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, [ref]);
+}
+
 function MetricCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color?: string }) {
   const isNA = value.startsWith("N/A");
+  const cardRef = useRef<HTMLDivElement>(null);
+  useTilt(cardRef);
+  const accentClass = color === "#00f5d4" ? "metric-card-green"
+    : color === "#7c5fff" ? "metric-card-purple"
+    : color === "#ff2d78" ? "metric-card-pink"
+    : color === "#ffb86c" ? "metric-card-amber"
+    : "";
   return (
-    <div className="glass-card p-5 flex flex-col gap-3" data-testid={`metric-${label.toLowerCase().replace(/\s+/g, "-")}`}>
+    <div
+      ref={cardRef}
+      className={`glass-card tilt-card p-5 flex flex-col gap-3 ${accentClass}`}
+      data-testid={`metric-${label.toLowerCase().replace(/\s+/g, "-")}`}
+    >
       <div className="flex items-center gap-2">
         <Icon className="w-4 h-4" style={{ color: color ?? "#8888aa", filter: color ? `drop-shadow(0 0 4px ${color})` : undefined }} />
         <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">{label}</span>
@@ -503,7 +598,7 @@ function WalletPortfolioView({
           </div>
           <div className="text-right">
             <div className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Total Value</div>
-            <div className="text-3xl font-bold" style={{ color: "#14F195" }}>
+            <div className="text-3xl font-bold" style={{ color: "#00f5d4" }}>
               {totalValue != null ? formatPrice(totalValue) : "—"}
             </div>
             <div className="text-xs text-muted-foreground mt-1">{data.tokenCount} token{data.tokenCount !== 1 ? "s" : ""}</div>
@@ -543,7 +638,7 @@ function WalletPortfolioView({
                       style={{ border: "1px solid rgba(255,255,255,0.1)" }}
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "rgba(153,69,255,0.2)", color: "#9945FF" }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "rgba(124,95,255,0.2)", color: "#7c5fff" }}>
                       {(holding.symbol ?? "?").slice(0, 2)}
                     </div>
                   )}
@@ -597,7 +692,7 @@ function WalletPortfolioView({
                       ? `${(holding.uiAmount / 1_000).toFixed(2)}K`
                       : holding.uiAmount.toLocaleString("en-US", { maximumFractionDigits: 4 })}
                   </div>
-                  <div className="text-xs" style={{ color: holding.usdValue != null && holding.usdValue > 0 ? "#14F195" : "#8888aa" }}>
+                  <div className="text-xs" style={{ color: holding.usdValue != null && holding.usdValue > 0 ? "#00f5d4" : "#8888aa" }}>
                     {holding.usdValue != null && holding.usdValue > 0
                       ? formatPrice(holding.usdValue)
                       : "unknown value"}
@@ -682,11 +777,11 @@ function TokenDashboard({ mintAddress }: { mintAddress: string }) {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <MetricCard icon={BarChart3} label="24h Volume" value={formatNumber(tokenData.daily_volume, "$")} color="#9945FF" />
-        <MetricCard icon={DollarSign} label="Market Cap" value={formatNumber(tokenData.market_cap, "$")} color="#14F195" />
-        <MetricCard icon={Layers} label="FDV" value={formatNumber(tokenData.fdv, "$")} color="#FFB800" />
-        <MetricCard icon={Droplets} label="Liquidity" value={formatNumber(tokenData.liquidity, "$")} color="#14F195" />
-        <MetricCard icon={Users} label="Holders" value={tokenData.holder_count != null ? tokenData.holder_count.toLocaleString() : "N/A — not provided by API"} color="#9945FF" />
+        <MetricCard icon={BarChart3} label="24h Volume" value={formatNumber(tokenData.daily_volume, "$")} color="#7c5fff" />
+        <MetricCard icon={DollarSign} label="Market Cap" value={formatNumber(tokenData.market_cap, "$")} color="#00f5d4" />
+        <MetricCard icon={Layers} label="FDV" value={formatNumber(tokenData.fdv, "$")} color="#ffb86c" />
+        <MetricCard icon={Droplets} label="Liquidity" value={formatNumber(tokenData.liquidity, "$")} color="#ff2d78" />
+        <MetricCard icon={Users} label="Holders" value={tokenData.holder_count != null ? tokenData.holder_count.toLocaleString() : "N/A — not provided by API"} color="#7c5fff" />
       </div>
 
       <MarketStatsPanel mintAddress={mintAddress} />
@@ -769,7 +864,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#050508" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#020008" }}>
       {/* Layered backgrounds */}
       <ParticleBackground />
       <div className="aurora-bg">
@@ -782,56 +877,56 @@ export default function Dashboard() {
       <div className="scanlines" />
 
       {/* Ticker tape */}
-      <div className="relative z-30 border-b ticker-tape py-1.5" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.8)" }}>
+      <div className="relative z-30 border-b ticker-tape py-1.5" style={{ borderColor: "rgba(124,95,255,0.15)", background: "rgba(2,0,8,0.85)" }}>
         <div className="ticker-inner text-xs font-mono">
           {Array.from({ length: 4 }).map((_, i) => (
             <span key={i}>
-              <span style={{ color: "#9945FF" }}>◈ SOL</span>&nbsp;
+              <span style={{ color: "#7c5fff" }}>◈ SOL</span>&nbsp;
               <span style={{ color: "#14F195" }}>BONK</span>&nbsp;·&nbsp;
-              <span style={{ color: "#00CFFF" }}>JUP</span>&nbsp;·&nbsp;
-              <span style={{ color: "#FF1493" }}>WIF</span>&nbsp;·&nbsp;
-              <span style={{ color: "#FFB800" }}>POPCAT</span>&nbsp;·&nbsp;
+              <span style={{ color: "#00f5d4" }}>JUP</span>&nbsp;·&nbsp;
+              <span style={{ color: "#ff2d78" }}>WIF</span>&nbsp;·&nbsp;
+              <span style={{ color: "#ffb86c" }}>POPCAT</span>&nbsp;·&nbsp;
               <span style={{ color: "#14F195" }}>TRUMP</span>&nbsp;·&nbsp;
-              <span style={{ color: "#9945FF" }}>PEPE</span>&nbsp;·&nbsp;
-              <span style={{ color: "#00CFFF" }}>DOGE</span>&nbsp;·&nbsp;
-              <span style={{ color: "#FF1493" }}>SHIB</span>&nbsp;·&nbsp;
-              <span style={{ color: "#FFB800" }}>FLOKI</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <span style={{ color: "#7c5fff" }}>PEPE</span>&nbsp;·&nbsp;
+              <span style={{ color: "#00f5d4" }}>DOGE</span>&nbsp;·&nbsp;
+              <span style={{ color: "#ff2d78" }}>SHIB</span>&nbsp;·&nbsp;
+              <span style={{ color: "#ffb86c" }}>FLOKI</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </span>
           ))}
         </div>
       </div>
 
       {/* Top Bar */}
-      <header className="relative z-40 px-6 py-4 flex items-center justify-between border-b sticky top-0" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.85)", backdropFilter: "blur(20px)" }}>
-        <button onClick={goHome} className="group text-left" data-testid="logo-home-button">
+      <header className="relative z-40 px-6 py-4 flex items-center justify-between border-b sticky top-0" style={{ borderColor: "rgba(124,95,255,0.2)", background: "rgba(2,0,8,0.88)", backdropFilter: "blur(20px)" }}>
+        <a href="/" className="group text-left" data-testid="logo-home-button">
           <div className="flex items-center gap-3">
-            <span
-              className="text-3xl font-bold transition-all group-hover:scale-110"
-              style={{ color: "#9945FF", filter: "drop-shadow(0 0 12px #9945FF) drop-shadow(0 0 24px rgba(153,69,255,0.5))" }}
-            >
-              ◈
-            </span>
+            {/* Logo image */}
+            <img
+              src="/logo.png"
+              alt="Token Health"
+              style={{ height: 38, width: "auto", objectFit: "contain", maxWidth: 130, borderRadius: 8 }}
+            />
             <div>
               <div
                 className="font-orbitron text-lg font-bold tracking-wide glitch"
-                data-text="Jupiter Token Health"
-                style={{ color: "#FFFFFF", textShadow: "0 0 20px rgba(153,69,255,0.5)" }}
+                data-text="SOLANA MEMECOIN HEALTH"
+                style={{ color: "#FFFFFF", textShadow: "0 0 20px rgba(124,95,255,0.5)" }}
               >
-                Jupiter Token Health
+                SOLANA MEMECOIN HEALTH
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Real-time Solana intelligence</p>
+              <p className="text-xs mt-0.5" style={{ color: "#00f5d4", opacity: 0.7 }}>Real-time Solana intelligence</p>
             </div>
           </div>
-        </button>
+        </a>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full live-dot" style={{ background: "#14F195", boxShadow: "0 0 10px #14F195, 0 0 20px rgba(20,241,149,0.5)" }} />
-            <span className="text-xs font-bold tracking-widest neon-green">LIVE</span>
+            <div className="w-2.5 h-2.5 rounded-full live-dot" style={{ background: "#00f5d4", boxShadow: "0 0 10px #00f5d4, 0 0 20px rgba(0,245,212,0.5)" }} />
+            <span className="text-xs font-bold tracking-widest neon-cyan">LIVE</span>
           </div>
           <div
             className="text-xs px-3 py-1.5 rounded-full font-semibold glow-btn badge-shimmer"
-            style={{ border: "1px solid rgba(153,69,255,0.5)", color: "#9945FF" }}
+            style={{ border: "1px solid rgba(124,95,255,0.5)", color: "#7c5fff" }}
           >
             ⚡ Powered by Jupiter
           </div>
@@ -844,28 +939,28 @@ export default function Dashboard() {
           <div className={`${selected ? "max-w-2xl mx-auto" : "w-full flex flex-col items-center gap-8"}`}>
             {!selected && (
               <div className="text-center relative">
-                {/* Floating emoji icons */}
-                <span className="float-icon" style={{ top: "-60px", left: "8%", animationDuration: "5s", fontSize: "3rem" }}>🚀</span>
-                <span className="float-icon" style={{ top: "-40px", right: "10%", animationDuration: "6.5s", animationDelay: "-2s", fontSize: "2.5rem" }}>🌙</span>
-                <span className="float-icon" style={{ top: "20px", left: "-2%", animationDuration: "7s", animationDelay: "-4s", fontSize: "2rem" }}>💎</span>
-                <span className="float-icon" style={{ top: "0px", right: "-1%", animationDuration: "5.5s", animationDelay: "-1s", fontSize: "2rem" }}>⚡</span>
-                <span className="float-icon" style={{ bottom: "-20px", left: "18%", animationDuration: "8s", animationDelay: "-3s", fontSize: "2rem" }}>🔥</span>
-                <span className="float-icon" style={{ bottom: "-30px", right: "20%", animationDuration: "6s", animationDelay: "-5s", fontSize: "2rem" }}>💰</span>
+                {/* Orbiting Coin Sprites with real logos */}
+                {HERO_COINS.map((coin) => (
+                  <HeroCoin key={coin.symbol} {...coin} />
+                ))}
 
-                <div className="text-xs font-orbitron tracking-widest mb-4 neon-cyan opacity-70">SOLANA · DEFI · MEME INTELLIGENCE</div>
+                <div className="text-xs font-orbitron tracking-widest mb-4 neon-cyan opacity-80" style={{ letterSpacing: "0.3em" }}>
+                  SOLANA · DEFI · MEME INTELLIGENCE
+                </div>
 
                 <h2
-                  className="text-5xl md:text-7xl font-bold mb-5 glitch gradient-text font-orbitron leading-tight"
-                  data-text="Token Health Dashboard"
+                  className="text-5xl md:text-7xl font-black mb-5 glitch gradient-text font-orbitron leading-tight"
+                  data-text="TOKEN HEALTH DASHBOARD"
+                  style={{ fontWeight: 900 }}
                 >
-                  Token Health<br />Dashboard
+                  TOKEN HEALTH<br />DASHBOARD
                 </h2>
 
-                <p className="text-muted-foreground max-w-lg mx-auto text-base mb-2">
-                  Search any Solana token — or paste a wallet address to see all holdings
+                <p className="max-w-lg mx-auto text-base mb-2" style={{ color: "rgba(255,255,255,0.65)" }}>
+                  Real-time Solana token intelligence — cut through the noise.
                 </p>
-                <p className="text-xs text-muted-foreground opacity-60">
-                  🚀 Real-time prices · 📊 OHLCV charts · 💎 Organic score · 📋 DEX analytics
+                <p className="text-xs opacity-50" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  Search any token or paste a wallet address to see all holdings
                 </p>
               </div>
             )}
@@ -881,9 +976,56 @@ export default function Dashboard() {
         )}
       </main>
 
-      <footer className="relative z-10 px-6 py-4 border-t flex items-center justify-between text-xs" style={{ borderColor: "rgba(153,69,255,0.15)", background: "rgba(5,5,8,0.6)", color: "#8888aa" }}>
-        <span>Data provided by Jupiter · DexScreener · GeckoTerminal</span>
-        <span className="font-orbitron text-xs" style={{ color: "#9945FF" }}>Last refresh: {lastRefresh.toLocaleTimeString()}</span>
+      {/* CTA Section */}
+      {!selected && (
+        <section className="relative z-10 cta-section py-16 px-6 text-center">
+          <h3
+            className="text-3xl md:text-4xl font-black font-orbitron mb-6"
+            style={{ color: "#fff", textShadow: "0 0 30px rgba(124,95,255,0.5), 0 0 60px rgba(0,245,212,0.2)" }}
+          >
+            Know what&apos;s real.<br />
+            <span className="gradient-text">Trade smarter.</span>
+          </h3>
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
+            {[
+              { label: "FREE", color: "#00f5d4" },
+              { label: "NO LOGIN", color: "#7c5fff" },
+              { label: "REAL-TIME", color: "#ff2d78" },
+            ].map(({ label, color }) => (
+              <span
+                key={label}
+                className="px-5 py-2 rounded-full text-sm font-bold font-orbitron tracking-widest"
+                style={{ color, background: `${color}18`, border: `1px solid ${color}60`, boxShadow: `0 0 16px ${color}30` }}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Powered By cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+            {[
+              { name: "JUPITER API", icon: "◈", desc: "Token metadata, organic score & price data", color: "#7c5fff" },
+              { name: "TRADINGVIEW", icon: "📈", desc: "Professional OHLCV candlestick charts", color: "#00f5d4" },
+              { name: "ON-CHAIN DATA", icon: "⛓", desc: "Wallet balances & live DeFi analytics", color: "#ff2d78" },
+            ].map(({ name, icon, desc, color }) => (
+              <div
+                key={name}
+                className="glass-card source-card p-5 flex flex-col items-center gap-2 text-center"
+                style={{ borderTop: `2px solid ${color}80`, boxShadow: `0 0 20px ${color}15` }}
+              >
+                <span className="text-2xl">{icon}</span>
+                <span className="font-orbitron font-bold text-sm tracking-wider" style={{ color }}>{name}</span>
+                <p className="text-xs text-muted-foreground">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <footer className="relative z-10 px-6 py-4 border-t flex items-center justify-between text-xs" style={{ borderColor: "rgba(124,95,255,0.15)", background: "rgba(2,0,8,0.8)", color: "#8888aa" }}>
+        <span>Data by Jupiter · DexScreener · GeckoTerminal</span>
+        <span className="font-orbitron text-xs" style={{ color: "#7c5fff" }}>Last refresh: {lastRefresh.toLocaleTimeString()}</span>
       </footer>
     </div>
   );
